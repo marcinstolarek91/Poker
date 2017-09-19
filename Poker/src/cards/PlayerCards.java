@@ -3,7 +3,7 @@ package cards;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerHands {
+public class PlayerCards {
 	private Card playerCard1;
 	private Card playerCard2;
 	private Card flopCard1 = null;
@@ -16,7 +16,7 @@ public class PlayerHands {
 	private List<Card> wholeCards = new ArrayList<>();
 	private List<Card> hand = new ArrayList();
 	
-	public PlayerHands(Card card1, Card card2) {
+	public PlayerCards(Card card1, Card card2) {
 		playerCard1 = card1;
 		playerCard2 = card2;
 		playerCards.add(card1);
@@ -24,7 +24,7 @@ public class PlayerHands {
 		generateWholeCards();
 	}
 	
-	public PlayerHands(Card card1, Card card2, Card flop1, Card flop2, Card flop3) {
+	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3) {
 		this(card1, card2);
 		flopCard1 = flop1;
 		flopCard2 = flop2;
@@ -35,14 +35,14 @@ public class PlayerHands {
 		generateWholeCards();
 	}
 	
-	public PlayerHands(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn) {
+	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn) {
 		this(card1, card2, flop1, flop2, flop3);
 		turnCard = turn;
 		tableCards.add(turn);
 		generateWholeCards();
 	}
 	
-	public PlayerHands(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn, Card river) {
+	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn, Card river) {
 		this(card1, card2, flop1, flop2, flop3, turn);
 		riverCard = river;
 		tableCards.add(river);
