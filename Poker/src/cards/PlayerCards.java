@@ -11,17 +11,14 @@ public class PlayerCards {
 	private Card flopCard3 = null;
 	private Card turnCard = null;
 	private Card riverCard = null;
-	private List<Card> playerCards = new ArrayList<>();
-	private List<Card> tableCards = new ArrayList<>();
-	private List<Card> wholeCards = new ArrayList<>();
+	private List<Card> cards = new ArrayList();
 	private List<Card> hand = new ArrayList();
 	
 	public PlayerCards(Card card1, Card card2) {
 		playerCard1 = card1;
 		playerCard2 = card2;
-		playerCards.add(card1);
-		playerCards.add(card2);
-		generateWholeCards();
+		cards.add(card1);
+		cards.add(card2);
 	}
 	
 	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3) {
@@ -29,66 +26,53 @@ public class PlayerCards {
 		flopCard1 = flop1;
 		flopCard2 = flop2;
 		flopCard3 = flop3;
-		tableCards.add(flop1);
-		tableCards.add(flop2);
-		tableCards.add(flop3);
-		generateWholeCards();
+		cards.add(flop1);
+		cards.add(flop2);
+		cards.add(flop3);
 	}
 	
 	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn) {
 		this(card1, card2, flop1, flop2, flop3);
 		turnCard = turn;
-		tableCards.add(turn);
-		generateWholeCards();
+		cards.add(turn);
 	}
 	
 	public PlayerCards(Card card1, Card card2, Card flop1, Card flop2, Card flop3, Card turn, Card river) {
 		this(card1, card2, flop1, flop2, flop3, turn);
 		riverCard = river;
-		tableCards.add(river);
-		generateWholeCards();
+		cards.add(river);
 	}
 	
 	public void addFlop(Card flop1, Card flop2, Card flop3) {
 		if (flopCard1 != null)
-			tableCards.remove(flopCard1);
+			cards.remove(flopCard1);
 		if (flopCard2 != null)
-			tableCards.remove(flopCard2);
+			cards.remove(flopCard2);
 		if (flopCard3 != null)
-			tableCards.remove(flopCard3);
-		tableCards.add(flop1);
-		tableCards.add(flop2);
-		tableCards.add(flop3);
+			cards.remove(flopCard3);
+		cards.add(flop1);
+		cards.add(flop2);
+		cards.add(flop3);
 		flopCard1 = flop1;
 		flopCard2 = flop2;
 		flopCard3 = flop3;
-		generateWholeCards();
 	}
 	
 	public void addTurn(Card turn) {
 		if (turnCard != null)
-			tableCards.remove(turnCard);
-		tableCards.add(turn);
+			cards.remove(turnCard);
+		cards.add(turn);
 		turnCard = turn;
-		generateWholeCards();
 	}
 	
 	public void addRiver(Card river) {
 		if (riverCard != null)
-			tableCards.remove(riverCard);
-		tableCards.add(river);
+			cards.remove(riverCard);
+		cards.add(river);
 		riverCard = river;
-		generateWholeCards();
 	}
 	
-	private void generateWholeCards() {
-		wholeCards.clear();
-		wholeCards.addAll(playerCards);
-		wholeCards.addAll(tableCards);
-	}
-	
-	public float chanceToPair() {
-		
-		return 0;
+	public void generateHand() {
+		//TODO
 	}
 }
