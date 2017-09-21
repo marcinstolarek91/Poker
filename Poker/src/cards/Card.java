@@ -8,6 +8,32 @@ public class Card implements Comparable<Card> {
 		faceCard = face;
 		cardColor = card;
 	}
+	
+	public Card(int random) {
+		if (random < 0 || random > 51)
+			random = 0;
+		switch (random % 4) {
+			case 0: cardColor = CardColor.HEART; break;
+			case 1: cardColor = CardColor.DIAMOND; break;
+			case 2: cardColor = CardColor.CLUB; break;
+			default: cardColor = CardColor.SPADE; break;
+		}
+		switch (random / 4) {
+			case 0: faceCard = FaceCard.TWO; break;
+			case 1: faceCard = FaceCard.THREE; break;
+			case 2: faceCard = FaceCard.FOUR; break;
+			case 3: faceCard = FaceCard.FIVE; break;
+			case 4: faceCard = FaceCard.SIX; break;
+			case 5: faceCard = FaceCard.SEVEN; break;
+			case 6: faceCard = FaceCard.EIGHT; break;
+			case 7: faceCard = FaceCard.NINE; break;
+			case 8: faceCard = FaceCard.TEN; break;
+			case 9: faceCard = FaceCard.JACK; break;
+			case 10: faceCard = FaceCard.QUEEN; break;
+			case 11: faceCard = FaceCard.KING; break;
+			default: faceCard = FaceCard.ACE; break;
+		}
+	}
 
 	@Override
 	public int compareTo(Card arg0) {
@@ -42,6 +68,4 @@ public class Card implements Comparable<Card> {
 			return false;
 		return true;
 	}
-	
-	
 }
