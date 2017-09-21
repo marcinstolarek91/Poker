@@ -14,6 +14,11 @@ public class PlayerCards {
 	private List<Card> cards = new ArrayList();
 	private List<Card> hand = new ArrayList();
 	
+	public PlayerCards() {
+		playerCard1 = null;
+		playerCard2 = null;
+	}
+	
 	public PlayerCards(Card card1, Card card2) {
 		playerCard1 = card1;
 		playerCard2 = card2;
@@ -41,6 +46,17 @@ public class PlayerCards {
 		this(card1, card2, flop1, flop2, flop3, turn);
 		riverCard = river;
 		cards.add(river);
+	}
+	
+	public void addPlayerCards(Card card1, Card card2) {
+		if (playerCard1 != null)
+			cards.remove(playerCard1);
+		if (playerCard2 != null)
+			cards.remove(playerCard2);
+		cards.add(card1);
+		cards.add(card2);
+		playerCard1 = card1;
+		playerCard2 = card2;
 	}
 	
 	public void addFlop(Card flop1, Card flop2, Card flop3) {
@@ -73,6 +89,6 @@ public class PlayerCards {
 	}
 	
 	public void generateHand() {
-		//TODO
+		hand = HandChecker.getHand(cards);
 	}
 }
