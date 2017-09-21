@@ -274,4 +274,51 @@ public class TestHandChecker {
 		highCardList.add(new Card(FaceCard.KING, CardColor.SPADE));
 		assertEquals(highCardList, HandChecker.getOnlyFigure(cards));
 	}
+	
+	@Test
+	public void testHasOwnPair() {
+		List<Card> ownCards = new ArrayList<>();
+		ownCards.add(new Card(FaceCard.SEVEN, CardColor.DIAMOND));
+		ownCards.add(new Card(FaceCard.KING, CardColor.SPADE));
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.KING, CardColor.HEART));
+		assertTrue(HandChecker.hasOwnPair(cards,  ownCards));
+		cards.remove(new Card(FaceCard.KING, CardColor.HEART));
+		cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.JACK, CardColor.CLUB));
+		assertFalse(HandChecker.hasOwnPair(cards,  ownCards));
+	}
+	
+	@Test
+	public void testHasOwnTwoPairs() {
+		List<Card> ownCards = new ArrayList<>();
+		ownCards.add(new Card(FaceCard.SEVEN, CardColor.DIAMOND));
+		ownCards.add(new Card(FaceCard.KING, CardColor.SPADE));
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.KING, CardColor.HEART));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		assertTrue(HandChecker.hasOwnTwoPairs(cards,  ownCards));
+		cards.remove(new Card(FaceCard.KING, CardColor.HEART));
+		cards.remove(new Card(FaceCard.SEVEN, CardColor.HEART));
+		cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.JACK, CardColor.CLUB));
+		cards.add(new Card(FaceCard.FOUR, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.FOUR, CardColor.CLUB));
+		assertFalse(HandChecker.hasOwnTwoPairs(cards,  ownCards));
+	}
+	
+	@Test
+	public void testHasOwnTwoPairsEachPair() {
+		List<Card> ownCards = new ArrayList<>();
+		ownCards.add(new Card(FaceCard.SEVEN, CardColor.DIAMOND));
+		ownCards.add(new Card(FaceCard.KING, CardColor.SPADE));
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.KING, CardColor.HEART));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		assertTrue(HandChecker.hasOwnTwoPairsEachPair(cards,  ownCards));
+		cards.remove(new Card(FaceCard.KING, CardColor.HEART));
+		cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.JACK, CardColor.CLUB));
+		assertFalse(HandChecker.hasOwnTwoPairsEachPair(cards,  ownCards));
+	}
 }

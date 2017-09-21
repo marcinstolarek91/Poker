@@ -86,6 +86,11 @@ public abstract class HandChecker {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param cards - player cards
+	 * @return only figure cards
+	 */
 	public static List<Card> getOnlyFigure(List<Card> cards){
 		return getOnlyFigure(cards, getFigureType(cards));
 	}
@@ -109,6 +114,11 @@ public abstract class HandChecker {
 		return figureCards;
 	}
 	
+	/**
+	 * 
+	 * @param wholeCards - all cards (player cards and cards on the table) - maximum 7
+	 * @return
+	 */
 	public static List<Card> getHand(List<Card> wholeCards) {
 		return getHand(wholeCards, getOnlyFigure(wholeCards));
 	}
@@ -365,6 +375,7 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
 	 * @return true if has any pair
 	 * IMPORTANT: first should be detected if there is no better hand (example three of a kind)
 	 */
@@ -376,6 +387,27 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own pair
+	 */
+	public static boolean hasOwnPair(List<Card> cards, List<Card> ownCards) {
+		List<Card> pair = new ArrayList<>();
+		do {
+			pair = getPair(cards);
+			if (pair == null)
+				return false;
+			if (pair.contains(ownCards.get(0)) || pair.contains(ownCards.get(1)))
+				return true;
+			else
+				cards.removeAll(pair);
+		}while(cards.size() >= 2);
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has two pairs
 	 * IMPORTANT: first should be detected if there is no better hand (example full house)
 	 */
@@ -387,6 +419,44 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own two pairs
+	 */
+	public static boolean hasOwnTwoPairs(List<Card> cards, List<Card> ownCards) {
+		List<Card> twoPairs = new ArrayList<>();
+		twoPairs = getTwoPairs(cards);
+		if (twoPairs == null)
+			return false;
+		if (twoPairs.contains(ownCards.get(0)) || twoPairs.contains(ownCards.get(1)))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own two pairs and each pair: one card in hand, second on the table
+	 */
+	public static boolean hasOwnTwoPairsEachPair(List<Card> cards, List<Card> ownCards) {
+		List<Card> twoPairs = new ArrayList<>();
+		if (!hasOwnTwoPairs(cards, ownCards))
+			return false;
+		if (getFigureType(ownCards) == PokerHandsType.PAIR)
+			return false;
+		twoPairs = getTwoPairs(cards);
+		if (twoPairs == null)
+			return false;
+		twoPairs.removeAll(ownCards);
+		if (twoPairs.size() == 2)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a three
 	 * IMPORTANT: first should be detected if there is no better hand (example full house, a four of a kind)
 	 */
@@ -398,6 +468,27 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own three
+	 */
+	public static boolean hasOwnThree(List<Card> cards, List<Card> ownCards) {
+		List<Card> three = new ArrayList<>();
+		do {
+			three = getThree(cards);
+			if (three == null)
+				return false;
+			if (three.contains(ownCards.get(0)) || three.contains(ownCards.get(1)))
+				return true;
+			else
+				cards.removeAll(three);
+		}while(cards.size() >= 3);
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a straight
 	 * IMPORTANT: first should be detected if there is no better hand (example flush, poker)
 	 */
@@ -409,6 +500,23 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own straight
+	 */
+	public static boolean hasOwnStraight(List<Card> cards, List<Card> ownCards) {
+		List<Card> straight = new ArrayList<>();
+		straight = getStraight(cards);
+		if (straight == null)
+			return false;
+		if (straight.contains(ownCards.get(0)) || straight.contains(ownCards.get(1)))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a flush
 	 * IMPORTANT: first should be detected if there is no better hand (example four of a kind, poker)
 	 */
@@ -420,6 +528,23 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own flush
+	 */
+	public static boolean hasOwnFlush(List<Card> cards, List<Card> ownCards) {
+		List<Card> flush = new ArrayList<>();
+		flush = getFlush(cards);
+		if (flush == null)
+			return false;
+		if (flush.contains(ownCards.get(0)) || flush.contains(ownCards.get(1)))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a full house
 	 * IMPORTANT: first should be detected if there is no better hand (example four of a kind)
 	 */
@@ -431,6 +556,23 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own fullHouse
+	 */
+	public static boolean hasOwnFullHouse(List<Card> cards, List<Card> ownCards) {
+		List<Card> fullHouse = new ArrayList<>();
+		fullHouse = getFullHouse(cards);
+		if (fullHouse == null)
+			return false;
+		if (fullHouse.contains(ownCards.get(0)) || fullHouse.contains(ownCards.get(1)))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a four
 	 * IMPORNANT: if detected, it has to be the best hand
 	 */
@@ -442,11 +584,44 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own four
+	 */
+	public static boolean hasOwnFour(List<Card> cards, List<Card> ownCards) {
+		List<Card> four = new ArrayList<>();
+		four = getFour(cards);
+		if (four == null)
+			return false;
+		if (four.contains(ownCards.get(0)) || four.contains(ownCards.get(1)))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
 	 * @return true if has a poker
 	 * IMPORNANT: if detected, it has to be the best hand
 	 */
 	public static boolean hasPoker(List<Card> cards) {
 		if (getPoker(cards) != null)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param cards - whole cards
+	 * @param ownCards - player cards
+	 * @return true if has own poker
+	 */
+	public static boolean hasOwnPoker(List<Card> cards, List<Card> ownCards) {
+		List<Card> poker = new ArrayList<>();
+		poker = getPoker(cards);
+		if (poker == null)
+			return false;
+		if (poker.contains(ownCards.get(0)) || poker.contains(ownCards.get(1)))
 			return true;
 		return false;
 	}
