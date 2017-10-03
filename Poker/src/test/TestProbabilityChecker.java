@@ -119,7 +119,7 @@ public class TestProbabilityChecker {
 		cards.add(new Card(FaceCard.JACK, CardColor.SPADE));
 		cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
 		result = (float) twoPairsCounter / (float) maxTries;
-		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.015F);
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.005F);
 	}
 	
 	@Test
