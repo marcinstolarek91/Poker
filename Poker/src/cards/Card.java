@@ -9,16 +9,16 @@ public class Card implements Comparable<Card> {
 		cardColor = card;
 	}
 	
-	public Card(int random) {
-		if (random < 0 || random > 51)
-			random = 0;
-		switch (random % 4) {
+	public Card(int number) {
+		if (number < 0 || number > 51)
+			number = 0;
+		switch (number % 4) {
 			case 0: cardColor = CardColor.HEART; break;
 			case 1: cardColor = CardColor.DIAMOND; break;
 			case 2: cardColor = CardColor.CLUB; break;
 			default: cardColor = CardColor.SPADE; break;
 		}
-		switch (random / 4) {
+		switch (number / 4) {
 			case 0: faceCard = FaceCard.TWO; break;
 			case 1: faceCard = FaceCard.THREE; break;
 			case 2: faceCard = FaceCard.FOUR; break;

@@ -182,7 +182,7 @@ public abstract class HandChecker {
 				if (pairs.size() == 2)
 					cardFirstPair = cards.get(i);
 				if (pairs.size() == 4) {
-					cards.sort(null);
+					pairs.sort(null);
 					return pairs;
 				}
 				--i;
@@ -222,20 +222,25 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getStraight(List<Card> cards) {
 		List<Card> straight = new ArrayList<>();
-		int size = cards.size();
-		if (size < 5)
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		newCards.sort(null);
+		for (int i = 0; i < newCards.size() - 1; i++) {
+			while (i < newCards.size() - 1 && newCards.get(i).faceCard.equals(newCards.get(i + 1).faceCard))
+				newCards.remove(i);
+		}
+		if (newCards.size() < 5)
 			return null;
-		cards.sort(null);
-		for (int i = size - 1; i > 3; i--) {
-			if (cards.get(i).faceCard.ordinal() == cards.get(i - 1).faceCard.ordinal() + 1) {
-				if (cards.get(i).faceCard.ordinal() == cards.get(i - 2).faceCard.ordinal() + 2) {
-					if (cards.get(i).faceCard.ordinal() == cards.get(i - 3).faceCard.ordinal() + 3) {
-						if (cards.get(i).faceCard.ordinal() == cards.get(i - 4).faceCard.ordinal() + 4) {
-							straight.add(cards.get(i - 4));
-							straight.add(cards.get(i - 3));
-							straight.add(cards.get(i - 2));
-							straight.add(cards.get(i - 1));
-							straight.add(cards.get(i));
+		for (int i = newCards.size() - 1; i > 3; i--) {
+			if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 1).faceCard.ordinal() + 1) {
+				if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 2).faceCard.ordinal() + 2) {
+					if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 3).faceCard.ordinal() + 3) {
+						if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 4).faceCard.ordinal() + 4) {
+							straight.add(newCards.get(i - 4));
+							straight.add(newCards.get(i - 3));
+							straight.add(newCards.get(i - 2));
+							straight.add(newCards.get(i - 1));
+							straight.add(newCards.get(i));
 							return straight;
 						}
 					}
@@ -243,12 +248,12 @@ public abstract class HandChecker {
 			}
 		}
 		// Ace - 2 - 3 - 4 - 5
-		if (cards.get(0).faceCard.equals(FaceCard.TWO) && cards.get(1).faceCard.equals(FaceCard.THREE) && cards.get(2).faceCard.equals(FaceCard.FOUR) && cards.get(3).faceCard.equals(FaceCard.FIVE) && cards.get(size - 1).faceCard.equals(FaceCard.ACE)) {
-			straight.add(cards.get(size - 1));
-			straight.add(cards.get(0));
-			straight.add(cards.get(1));
-			straight.add(cards.get(2));
-			straight.add(cards.get(3));
+		if (newCards.get(0).faceCard.equals(FaceCard.TWO) && newCards.get(1).faceCard.equals(FaceCard.THREE) && newCards.get(2).faceCard.equals(FaceCard.FOUR) && newCards.get(3).faceCard.equals(FaceCard.FIVE) && newCards.get(newCards.size() - 1).faceCard.equals(FaceCard.ACE)) {
+			straight.add(newCards.get(newCards.size() - 1));
+			straight.add(newCards.get(0));
+			straight.add(newCards.get(1));
+			straight.add(newCards.get(2));
+			straight.add(newCards.get(3));
 			return straight;
 		}
 		return null;
@@ -272,11 +277,12 @@ public abstract class HandChecker {
 			if (color[i] >= 5) {
 				cards.sort(null);
 				for (int j = 0; j < size; j++) {
-					if (cards.get(i).cardColor.ordinal() == i)
-						flush.add(cards.get(i));
+					if (cards.get(j).cardColor.ordinal() == i)
+						flush.add(cards.get(j));
 				}
 				while (flush.size() > 5)
 					flush.remove(0);
+				flush.sort(null);
 				return flush;
 			}
 		}
@@ -339,20 +345,25 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getPoker(List<Card> cards) {
 		List<Card> poker = new ArrayList<>();
-		int size = cards.size();
-		if (size < 5)
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(newCards);
+		newCards.sort(null);
+		for (int i = 0; i < newCards.size() - 1; i++) {
+			while (i < newCards.size() - 1 && newCards.get(i).faceCard.equals(newCards.get(i + 1).faceCard))
+				newCards.remove(i);
+		}
+		if (newCards.size() < 5)
 			return null;
-		cards.sort(null);
-		for (int i = size - 1; i > 3; i--) {
-			if (cards.get(i).faceCard.ordinal() == cards.get(i - 1).faceCard.ordinal() + 1 && cards.get(i).cardColor.equals(cards.get(i - 1).cardColor)) {
-				if (cards.get(i).faceCard.ordinal() == cards.get(i - 2).faceCard.ordinal() + 2 && cards.get(i).cardColor.equals(cards.get(i - 2).cardColor)) {
-					if (cards.get(i).faceCard.ordinal() == cards.get(i - 3).faceCard.ordinal() + 3 && cards.get(i).cardColor.equals(cards.get(i - 3).cardColor)) {
-						if (cards.get(i).faceCard.ordinal() == cards.get(i - 4).faceCard.ordinal() + 4 && cards.get(i).cardColor.equals(cards.get(i - 4).cardColor)) {
-							poker.add(cards.get(i - 4));
-							poker.add(cards.get(i - 3));
-							poker.add(cards.get(i - 2));
-							poker.add(cards.get(i - 1));
-							poker.add(cards.get(i));
+		for (int i = newCards.size() - 1; i > 3; i--) {
+			if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 1).faceCard.ordinal() + 1 && newCards.get(i).cardColor.equals(newCards.get(i - 1).cardColor)) {
+				if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 2).faceCard.ordinal() + 2 && newCards.get(i).cardColor.equals(newCards.get(i - 2).cardColor)) {
+					if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 3).faceCard.ordinal() + 3 && newCards.get(i).cardColor.equals(newCards.get(i - 3).cardColor)) {
+						if (newCards.get(i).faceCard.ordinal() == newCards.get(i - 4).faceCard.ordinal() + 4 && newCards.get(i).cardColor.equals(newCards.get(i - 4).cardColor)) {
+							poker.add(newCards.get(i - 4));
+							poker.add(newCards.get(i - 3));
+							poker.add(newCards.get(i - 2));
+							poker.add(newCards.get(i - 1));
+							poker.add(newCards.get(i));
 							return poker;
 						}
 					}
@@ -360,13 +371,13 @@ public abstract class HandChecker {
 			}
 		}
 		// Ace - 2 - 3 - 4 - 5
-		if (cards.get(0).faceCard.equals(FaceCard.TWO) && cards.get(1).faceCard.equals(FaceCard.THREE) && cards.get(2).faceCard.equals(FaceCard.FOUR) && cards.get(3).faceCard.equals(FaceCard.FIVE) && cards.get(size - 1).faceCard.equals(FaceCard.ACE)) {
-			if (cards.get(0).cardColor.equals(cards.get(1).cardColor) && cards.get(0).cardColor.equals(cards.get(2).cardColor) && cards.get(0).cardColor.equals(cards.get(3).cardColor) && cards.get(0).cardColor.equals(cards.get(size - 1).cardColor)) {
-				poker.add(cards.get(size - 1));
-				poker.add(cards.get(0));
-				poker.add(cards.get(1));
-				poker.add(cards.get(2));
-				poker.add(cards.get(3));
+		if (newCards.get(0).faceCard.equals(FaceCard.TWO) && newCards.get(1).faceCard.equals(FaceCard.THREE) && newCards.get(2).faceCard.equals(FaceCard.FOUR) && newCards.get(3).faceCard.equals(FaceCard.FIVE) && newCards.get(newCards.size() - 1).faceCard.equals(FaceCard.ACE)) {
+			if (newCards.get(0).cardColor.equals(newCards.get(1).cardColor) && newCards.get(0).cardColor.equals(newCards.get(2).cardColor) && newCards.get(0).cardColor.equals(newCards.get(3).cardColor) && newCards.get(0).cardColor.equals(newCards.get(newCards.size() - 1).cardColor)) {
+				poker.add(newCards.get(newCards.size() - 1));
+				poker.add(newCards.get(0));
+				poker.add(newCards.get(1));
+				poker.add(newCards.get(2));
+				poker.add(newCards.get(3));
 				return poker;
 			}
 		}
