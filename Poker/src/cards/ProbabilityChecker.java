@@ -168,7 +168,7 @@ public abstract class ProbabilityChecker {
 	 * @param goodNumbers4 - how many cards allow to get figure as fourth card (have to be less than goodNumbers3)
 	 * @return probability (0.00 - 1.00) to get exact four cards that are needed
 	 */
-	public static float getProbabilityFourCards(int steps, int knownNumbers, int goodNumbers1, int goodNumbers2, int goodNumbers3, int goodNumbers4) {
+	private static float getProbabilityFourCards(int steps, int knownNumbers, int goodNumbers1, int goodNumbers2, int goodNumbers3, int goodNumbers4) {
 		float temp1 = 0, temp2 = 0;
 		int allNumbers = CARD_SUM - knownNumbers;
 		if (!goodNumbersPositive(goodNumbers1, goodNumbers2, goodNumbers3, goodNumbers4))
@@ -334,7 +334,6 @@ public abstract class ProbabilityChecker {
 		boolean isOwnCardInRange;
 		boolean[] figurePresent = new boolean[13]; // is that figure in cards
 		boolean[] ownFigurePresent = new boolean[13]; // is that figure in ownCards
-		float probability = 0.0F;
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.STRAIGHT)) {
@@ -373,8 +372,8 @@ public abstract class ProbabilityChecker {
 					default: break;
 				}
 			}
+			actualCombination = new ArrayList<>();
 		}
-		actualCombination.clear();
 		// ACE - TWO - THREE - FOUR - FIVE straight
 		temp = 5;
 		isOwnCardInRange = false;
@@ -402,6 +401,8 @@ public abstract class ProbabilityChecker {
 				default: break;
 			}
 		}
+		actualCombination = new ArrayList<>();
+		combinationChecked.clear();
 		highestOwnCard = (ownCards.get(0).faceCard.ordinal() >= ownCards.get(1).faceCard.ordinal()) ? ownCards.get(0).faceCard.ordinal() : ownCards.get(1).faceCard.ordinal();
 		if (highestOwnCard <= 7) { // NINE or lower card - case when there are five higher card on table
 			for (int i = highestOwnCard + 1; i < 9; i++) {
@@ -409,14 +410,20 @@ public abstract class ProbabilityChecker {
 				for (int j = i; j < i + 5; j++) {
 					if (figurePresent[j])
 						--temp;
+					else
+						actualCombination.add(new Integer(j));
 				}
-				switch (temp) {
+				if (!combinationChecked.contains(actualCombination)) {
+					combinationChecked.add(actualCombination);
+					switch (temp) {
 						case 4: probabilityListNegative.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), 16, 12, 8, 4))); break;
 						case 3: probabilityListNegative.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 12, 8, 4))); break;
 						case 2: probabilityListNegative.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 8, 4))); break;
 						case 1: probabilityListNegative.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 4))); break;
-					default: break;
+						default: break;
+					}
 				}
+				actualCombination = new ArrayList<>();
 			}
 		}
 		return calculateProbability(probabilityListPositive, probabilityListNegative);
@@ -437,7 +444,8 @@ public abstract class ProbabilityChecker {
 		int highestOwnCard;
 		int higherCardNumber;
 		int highestPossibleCard = (CARD_SUM / 4) - 1;
-		float probability = 0.0F;
+		List<Float> probabilityListPositive = new ArrayList<>();
+		List<Float> probabilityListNegative = new ArrayList<>();
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.FLUSH)) {
@@ -464,29 +472,29 @@ public abstract class ProbabilityChecker {
 					++higherCardNumber;
 			}
 			if (color[ownCards.get(i).cardColor.ordinal()] == 1)
-				probability += getProbabilityFourCards(cardsToSeeNumber, cards.size(), 12, 11, 10, 9);
+				probabilityListPositive.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), 12, 11, 10, 9)));
 			else if (color[ownCards.get(i).cardColor.ordinal()] == 2)
-				probability += getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 11, 10, 9);
+				probabilityListPositive.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 11, 10, 9)));
 			else if (color[ownCards.get(i).cardColor.ordinal()] == 3)
-				probability += getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 10, 9);
+				probabilityListPositive.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 10, 9)));
 			else if (color[ownCards.get(i).cardColor.ordinal()] == 4)
-				probability += getProbabilityOneCard(cardsToSeeNumber, cards.size(), 9);
+				probabilityListPositive.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 9)));
 			if (highestOwnCard <= 7) { // NINE or lower card - case when there are five higher card on table
 				if (higherCardNumber == 0)
-					probability -= getProbabilityFiveCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard, highestPossibleCard - highestOwnCard - 1, highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4);
+					probabilityListNegative.add(new Float(getProbabilityFiveCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard, highestPossibleCard - highestOwnCard - 1, highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4)));
 				else if (higherCardNumber == 1)
-					probability -= getProbabilityFourCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 1, highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4);
+					probabilityListNegative.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 1, highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4)));
 				else if (higherCardNumber == 2)
-					probability -= getProbabilityThreeCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4);
+					probabilityListNegative.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 2, highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4)));
 				else if (higherCardNumber == 3)
-					probability -= getProbabilityTwoCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4);
+					probabilityListNegative.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 3, highestPossibleCard - highestOwnCard - 4)));
 				else if (higherCardNumber == 4)
-					probability -= getProbabilityOneCard(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 4);
+					probabilityListNegative.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), highestPossibleCard - highestOwnCard - 4)));
 			}
 			if (ownCards.get(0).cardColor.equals(ownCards.get(1).cardColor)) // cards with the same color
-				return probability;
+				return calculateProbability(probabilityListPositive, probabilityListNegative);
 		}
-		return probability;
+		return calculateProbability(probabilityListPositive, probabilityListNegative);
 	}
 	
 	/**
@@ -520,4 +528,132 @@ public abstract class ProbabilityChecker {
 		}
 		return 3.0F * getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 3, 2, 1);
 	}
-}
+
+	/**
+	 * Check probability to get a poker with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @return probability (0.00 - 1.00) to have a poker with own card
+	 * 100F if already has own poker
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnPoker(List<Card> cards, List<Card> ownCards) {
+		List<Float> probabilityListPositive = new ArrayList<>();
+		List<Float> probabilityListNegative = new ArrayList<>();
+		List<List<Integer>> combinationChecked = new ArrayList<>(); // the same combination has been already checked
+		List<Integer> actualCombination = new ArrayList<>();
+		int cardsToSeeNumber = 7 - cards.size();
+		int[] color = {0, 0, 0, 0}; // number of cards in specified color
+		int temp;
+		int highestOwnCardColor;
+		boolean isOwnCardInRange;
+		boolean[] figurePresent = new boolean[13]; // is that figure in cards
+		boolean[] ownFigurePresent = new boolean[13]; // is that figure in ownCards
+		if (!cardsAreOK(cards, ownCards))
+			return 0.0F;
+		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.POKER)) {
+			case 1: return 1.0F; // already has an own flush
+			case 2: return 0.0F;
+			default: break;
+		}
+		for (Card card : cards)
+			++color[card.cardColor.ordinal()];
+		if (cardsToSeeNumber < (5 - color[ownCards.get(0).cardColor.ordinal()]) && cardsToSeeNumber < (5 - color[ownCards.get(1).cardColor.ordinal()]))
+			return 0.0F; // cannot get poker
+		for (int c = 0; c < 2; c++) {
+			if (ownCards.get(0).cardColor.equals(ownCards.get(1).cardColor)) {// only one color
+				++c;
+				highestOwnCardColor = (ownCards.get(0).faceCard.ordinal() >= ownCards.get(1).faceCard.ordinal()) ? ownCards.get(0).faceCard.ordinal() : ownCards.get(1).faceCard.ordinal();
+			}
+			else
+				highestOwnCardColor = ownCards.get(c).faceCard.ordinal();
+			for (int i = 0; i < 13; i++) {
+				if (cards.contains(new Card(i * 4 + ownCards.get(c).cardColor.ordinal())))
+					figurePresent[i] = true;
+				else
+					figurePresent[i] = false;
+				if (ownCards.contains(new Card(i * 4 + ownCards.get(c).cardColor.ordinal())))
+					ownFigurePresent[i] = true;
+				else
+					ownFigurePresent[i] = false;
+			}
+			for (int i = 0; i < 9; i++) {
+				temp = 5;
+				isOwnCardInRange = false;
+				for (int j = i; j < i + 5; j++) {
+					if (ownFigurePresent[j])
+						isOwnCardInRange = true;
+					if (figurePresent[j])
+						--temp;
+					else
+						actualCombination.add(new Integer(j));
+				}
+				if (isOwnCardInRange && !combinationChecked.contains(actualCombination)) {
+					combinationChecked.add(actualCombination);
+					switch (temp) {
+						case 4: probabilityListPositive.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), 4, 3, 2, 1))); break;
+						case 3: probabilityListPositive.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 3, 2, 1))); break;
+						case 2: probabilityListPositive.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 2, 1))); break;
+						case 1: probabilityListPositive.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 1))); break;
+						default: break;
+					}
+				}
+				actualCombination = new ArrayList<>();
+			}
+			// ACE - TWO - THREE - FOUR - FIVE straight
+			temp = 5;
+			isOwnCardInRange = false;
+			for (int j = 0; j < 4; j++) {
+				if (ownFigurePresent[j])
+					isOwnCardInRange = true;
+				if (figurePresent[j])
+					--temp;
+				else
+					actualCombination.add(new Integer(j));
+			}
+			if (ownFigurePresent[12])
+				isOwnCardInRange = true;
+			if (figurePresent[12])
+				--temp;
+			else
+				actualCombination.add(new Integer(12));
+			if (isOwnCardInRange && !combinationChecked.contains(actualCombination)) {
+				combinationChecked.add(actualCombination);
+				switch (temp) {
+					case 4: probabilityListPositive.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), 16, 12, 8, 4))); break;
+					case 3: probabilityListPositive.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 12, 8, 4))); break;
+					case 2: probabilityListPositive.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 8, 4))); break;
+					case 1: probabilityListPositive.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 4))); break;
+					default: break;
+				}
+			}
+			actualCombination = new ArrayList<>();
+			combinationChecked.clear();
+			if (highestOwnCardColor <= 7) { // NINE or lower card - case when there are five higher card on table in that color
+				for (int i = highestOwnCardColor + 1; i < 9; i++) {
+					temp = 5;
+					for (int j = i; j < i + 5; j++) {
+						if (figurePresent[j])
+							--temp;
+						else
+							actualCombination.add(new Integer(j));
+					}
+					if (!combinationChecked.contains(actualCombination)) {
+						combinationChecked.add(actualCombination);
+						switch (temp) {
+							case 4: probabilityListNegative.add(new Float(getProbabilityFourCards(cardsToSeeNumber, cards.size(), 4, 3, 2, 1))); break;
+							case 3: probabilityListNegative.add(new Float(getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 3, 2, 1))); break;
+							case 2: probabilityListNegative.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 2, 1))); break;
+							case 1: probabilityListNegative.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 1))); break;
+							default: break;
+						}
+					}
+					actualCombination = new ArrayList<>();
+				}
+			}
+		}
+		return calculateProbability(probabilityListPositive, probabilityListNegative);
+	}
+	
+} // end of class

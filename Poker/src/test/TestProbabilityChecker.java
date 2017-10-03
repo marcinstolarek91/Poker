@@ -17,8 +17,8 @@ import cards.HandChecker;
 import cards.ProbabilityChecker;
 
 public class TestProbabilityChecker {
-	List<Card> cards = new ArrayList<>();
-	List<Card> ownCards = new ArrayList<>();
+	private List<Card> cards = new ArrayList<>();
+	private List<Card> ownCards = new ArrayList<>();
 
 	@Before
 	public void setUp() throws Exception {
@@ -134,9 +134,9 @@ public class TestProbabilityChecker {
 		for (int i = 0; i < maxTries; i++) {
 			cards.clear();
 			cards.addAll(ownCards);
-			/*cards.add(new Card(FaceCard.THREE, CardColor.SPADE));
+			cards.add(new Card(FaceCard.THREE, CardColor.SPADE));
 			cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
-			cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
+			cards.add(new Card(FaceCard.KING, CardColor.CLUB));
 			while (cards.size() != 7) {
 				do {
 					newCard = null;
@@ -149,9 +149,9 @@ public class TestProbabilityChecker {
 		}
 		cards.clear();
 		cards.addAll(ownCards);
-		/*cards.add(new Card(FaceCard.THREE, CardColor.SPADE));
+		cards.add(new Card(FaceCard.THREE, CardColor.SPADE));
 		cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
-		cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
+		cards.add(new Card(FaceCard.KING, CardColor.CLUB));
 		result = (float) flushCounter / (float) maxTries;
 		assertEquals(result, ProbabilityChecker.checkChanceToOwnFlush(cards, ownCards), 0.015F);
 	}
@@ -190,5 +190,41 @@ public class TestProbabilityChecker {
 		//cards.add(new Card(FaceCard.TWO, CardColor.CLUB));
 		result = (float) straightCounter / (float) maxTries;
 		assertEquals(result, ProbabilityChecker.checkChanceToOwnStraight(cards, ownCards), 0.005F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnPoker1() {
+		Card newCard;
+		int pokerCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.SIX, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.THREE, CardColor.HEART));
+			cards.add(new Card(FaceCard.FOUR, CardColor.HEART));
+			cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+			//cards.add(new Card(FaceCard.TWO, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnPoker(cards, ownCards))
+				++pokerCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.THREE, CardColor.HEART));
+		cards.add(new Card(FaceCard.FOUR, CardColor.HEART));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		//cards.add(new Card(FaceCard.TWO, CardColor.HEART));
+		result = (float) pokerCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnPoker(cards, ownCards), 0.005F);
 	}
 }

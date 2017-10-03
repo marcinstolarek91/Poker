@@ -346,7 +346,7 @@ public abstract class HandChecker {
 	public static List<Card> getPoker(List<Card> cards) {
 		List<Card> poker = new ArrayList<>();
 		List<Card> newCards = new ArrayList<>();
-		newCards.addAll(newCards);
+		newCards.addAll(cards);
 		newCards.sort(null);
 		for (int i = 0; i < newCards.size() - 1; i++) {
 			while (i < newCards.size() - 1 && newCards.get(i).faceCard.equals(newCards.get(i + 1).faceCard))
