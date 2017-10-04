@@ -259,7 +259,9 @@ public abstract class ProbabilityChecker {
 		int cardsToSeeNumber = 7 - cards.size();
 		int cardsOnTable = cards.size() - 2;
 		int higherThanOwnOnTable = 0;
-		float temp1, temp2, temp3;
+		int ownPairFigure;
+		int usedCards = 0; // cards on table in pair with own card
+		float temp1, temp2, temp3, temp4;
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.TWO_PAIRS)) {
@@ -267,31 +269,69 @@ public abstract class ProbabilityChecker {
 			case 2: return 0.0F;
 			default: break;
 		}
-		if (HandChecker.getFigureType(ownCards) == PokerHandsType.PAIR) {// has own pair
+		if (HandChecker.getFigureType(ownCards) == PokerHandsType.PAIR) {// has own pair in hand
 			for (Card card : cards) {
 				if (card.faceCard.ordinal() > ownCards.get(0).faceCard.ordinal())
 					++higherThanOwnOnTable;
 			}
-			// pair from one card on table and one new
-			temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3);
-			if (cardsOnTable > 0) {
-				temp2 = (float) (higherThanOwnOnTable / cardsOnTable); // second par (one card to pair is now on the table) is greater than own - chance in %
+		}
+		else { // hasn't pair in hand
+			usedCards = 1;
+			if (HandChecker.hasOwnPair(cards, ownCards)) { // has pair from one own card - looking for new pair
+				if (HandChecker.getPair(cards).contains(ownCards.get(0)))
+					ownPairFigure = ownCards.get(0).faceCard.ordinal();
+				else
+					ownPairFigure = ownCards.get(1).faceCard.ordinal();
+				for (Card card : cards) {
+					if (card.faceCard.ordinal() > ownPairFigure)
+						++higherThanOwnOnTable;
+				}
+			}
+			else { // hasn't any pair
+				for (Card card : cards) {
+					if (card.faceCard.ordinal() > (ownCards.get(0).faceCard.ordinal() + ownCards.get(1).faceCard.ordinal()) / 2) // averange card
+						++higherThanOwnOnTable;
+				}
+			}
+		}
+		if (HandChecker.getFigureType(ownCards) == PokerHandsType.PAIR || HandChecker.hasOwnPair(cards, ownCards)) {
+			if (cardsOnTable - usedCards > 0) { // pair from one card on table and one new
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3);
+				temp2 = (float) (higherThanOwnOnTable / (cardsOnTable - usedCards)); // second par (one card to pair is now on the table) is greater than own - chance in %
 				temp3 = temp2;
 				temp2 *= getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, (higherThanOwnOnTable - 1) * 3); // probability to get third (greater than own) pair - from cards on table
 				temp3 *= (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) * getProbabilityTwoCards(cardsToSeeNumber - 1, cards.size() + 1, 4, 3); // probability to get third (greater than own) pair - from new cards
-				// pair from two new cards
-				for (int i = 0; i < cardsOnTable; i++)
-					probabilityListPositive.add(new Float(temp1 * (1.0F - temp2) * (1.0F - temp3)));
-			}			
+				probabilityListPositive.add(new Float((float)(cardsOnTable - usedCards) * (temp1 * (1.0F - temp2) * (1.0F - temp3)))); // pair from two new cards
+			}
 			temp1 = getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 4, 3);
 			temp2 = (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) / ((CARD_SUM / 4) - 1); // second par (both cards to pair is now on the table) is greater than own - chance in %
 			temp3 = temp2;
 			temp2 *= getProbabilityOneCard(cardsToSeeNumber - 2, cards.size() + 2, higherThanOwnOnTable * 3); // probability to get third (greater than own) pair - from cards on table
 			temp3 *= (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) * getProbabilityTwoCards(cardsToSeeNumber - 2, cards.size() + 2, 4, 3); // probability to get third (greater than own) pair - from new cards
-			for (int i = 0; i < ((CARD_SUM / 4) - 1 - cardsOnTable - 1); i++)
-				probabilityListPositive.add(new Float(temp1 * (1.0F - temp2) * (1.0F - temp3)));
+			probabilityListPositive.add(new Float((float)((CARD_SUM / 4) - 1 - (cardsOnTable - usedCards) - 1) * (temp1 * (1.0F - temp2) * (1.0F - temp3))));
 		}
-		//else
+		if (HandChecker.getFigureType(ownCards) != PokerHandsType.PAIR && HandChecker.hasOwnPair(cards, ownCards)) // pair with second own card
+			probabilityListPositive.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3)));
+		else if (cardsToSeeNumber >= 2 && HandChecker.getFigureType(ownCards) != PokerHandsType.PAIR && !HandChecker.hasOwnPair(cards, ownCards)) { // has no pair yet
+			temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 6); // get pair with any own card
+			temp2 = getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, 3); // get pair with second card
+			probabilityListPositive.add(new Float(temp1 * temp2));
+			temp1 = temp1 * (1.0F - temp2); // probability to get only one pair with own cards
+			if (cardsOnTable - usedCards > 0) { // pair from one card on table and one new
+				temp2 = getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, 3);
+				temp3 = (float) (higherThanOwnOnTable / (cardsOnTable - usedCards)); // second par (one card to pair is now on the table) is greater than own - chance in %
+				temp4 = temp2;
+				temp3 *= getProbabilityOneCard(cardsToSeeNumber - 2, cards.size() + 2, (higherThanOwnOnTable - 1) * 3); // probability to get third (greater than own) pair - from cards on table
+				temp4 *= (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) * getProbabilityTwoCards(cardsToSeeNumber - 2, cards.size() + 2, 4, 3); // probability to get third (greater than own) pair - from new cards
+				probabilityListPositive.add(new Float((float)(cardsOnTable - usedCards) * (temp1 * temp2 * (1.0F - temp3) * (1.0F - temp4)))); // pair from two new cards
+			}
+			temp2 = getProbabilityTwoCards(cardsToSeeNumber - 1, cards.size() + 1, 4, 3);
+			temp3 = (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) / ((CARD_SUM / 4) - 1); // second par (both cards to pair is now on the table) is greater than own - chance in %
+			temp4 = temp2;
+			temp3 *= getProbabilityOneCard(cardsToSeeNumber - 3, cards.size() + 3, higherThanOwnOnTable * 3); // probability to get third (greater than own) pair - from cards on table
+			temp4 *= (float) ((CARD_SUM / 4) - (ownCards.get(0).faceCard.ordinal() + 1) - higherThanOwnOnTable) * getProbabilityTwoCards(cardsToSeeNumber - 3, cards.size() + 3, 4, 3); // probability to get third (greater than own) pair - from new cards
+			probabilityListPositive.add(new Float((float)((CARD_SUM / 4) - 1 - (cardsOnTable - usedCards) - 1) * (temp1 * temp2 * (1.0F - temp3) * (1.0F - temp4))));
+		}
 		return calculateProbability(probabilityListPositive, probabilityListNegative);
 	}
 	

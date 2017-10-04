@@ -94,8 +94,8 @@ public class TestProbabilityChecker {
 		int twoPairsCounter = 0;
 		int maxTries = 100000;
 		float result;
-		ownCards.add(new Card(FaceCard.ACE, CardColor.DIAMOND));
-		ownCards.add(new Card(FaceCard.ACE, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.EIGHT, CardColor.DIAMOND));
+		ownCards.add(new Card(FaceCard.EIGHT, CardColor.HEART));
 		cards.addAll(ownCards);
 		for (int i = 0; i < maxTries; i++) {
 			cards.clear();
@@ -120,6 +120,40 @@ public class TestProbabilityChecker {
 		cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
 		result = (float) twoPairsCounter / (float) maxTries;
 		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.005F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnTwoPairs2() {
+		Card newCard;
+		int twoPairsCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.FOUR, CardColor.DIAMOND));
+		ownCards.add(new Card(FaceCard.JACK, CardColor.HEART));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			/*cards.add(new Card(FaceCard.THREE, CardColor.HEART));
+			cards.add(new Card(FaceCard.JACK, CardColor.SPADE));
+			cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnTwoPairs(cards, ownCards))
+				++twoPairsCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		/*cards.add(new Card(FaceCard.THREE, CardColor.HEART));
+		cards.add(new Card(FaceCard.JACK, CardColor.SPADE));
+		cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
+		result = (float) twoPairsCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.015F);
 	}
 	
 	@Test
@@ -163,7 +197,7 @@ public class TestProbabilityChecker {
 		int maxTries = 100000;
 		float result;
 		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
-		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.FIVE, CardColor.HEART));
 		cards.addAll(ownCards);
 		for (int i = 0; i < maxTries; i++) {
 			cards.clear();

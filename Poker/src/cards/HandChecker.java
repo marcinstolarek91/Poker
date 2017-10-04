@@ -227,7 +227,7 @@ public abstract class HandChecker {
 		newCards.sort(null);
 		for (int i = 0; i < newCards.size() - 1; i++) {
 			while (i < newCards.size() - 1 && newCards.get(i).faceCard.equals(newCards.get(i + 1).faceCard))
-				newCards.remove(i);
+				newCards.remove(i + 1);
 		}
 		if (newCards.size() < 5)
 			return null;
@@ -350,7 +350,7 @@ public abstract class HandChecker {
 		newCards.sort(null);
 		for (int i = 0; i < newCards.size() - 1; i++) {
 			while (i < newCards.size() - 1 && newCards.get(i).faceCard.equals(newCards.get(i + 1).faceCard))
-				newCards.remove(i);
+				newCards.remove(i + 1);
 		}
 		if (newCards.size() < 5)
 			return null;
