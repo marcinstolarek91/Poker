@@ -119,7 +119,7 @@ public class TestProbabilityChecker {
 		cards.add(new Card(FaceCard.JACK, CardColor.SPADE));
 		cards.add(new Card(FaceCard.KING, CardColor.CLUB));*/
 		result = (float) twoPairsCounter / (float) maxTries;
-		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.005F);
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnTwoPairs(cards, ownCards), 0.015F);
 	}
 	
 	@Test
@@ -223,7 +223,7 @@ public class TestProbabilityChecker {
 		cards.add(new Card(FaceCard.SEVEN, CardColor.CLUB));
 		//cards.add(new Card(FaceCard.TWO, CardColor.CLUB));
 		result = (float) straightCounter / (float) maxTries;
-		assertEquals(result, ProbabilityChecker.checkChanceToOwnStraight(cards, ownCards), 0.005F);
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnStraight(cards, ownCards), 0.015F);
 	}
 	
 	@Test
@@ -259,6 +259,238 @@ public class TestProbabilityChecker {
 		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
 		//cards.add(new Card(FaceCard.TWO, CardColor.HEART));
 		result = (float) pokerCounter / (float) maxTries;
-		assertEquals(result, ProbabilityChecker.checkChanceToOwnPoker(cards, ownCards), 0.005F);
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnPoker(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse1() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.SIX, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse2() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.SIX, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.FOUR, CardColor.CLUB));
+			cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.FOUR, CardColor.CLUB));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse3() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.SIX, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.FOUR, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.FOUR, CardColor.CLUB));
+			cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.FOUR, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.FOUR, CardColor.CLUB));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse4() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			/*cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.QUEEN, CardColor.CLUB));
+			cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));*/
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		/*cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.QUEEN, CardColor.CLUB));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));*/
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse5() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.QUEEN, CardColor.CLUB));
+			cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.QUEEN, CardColor.CLUB));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.HEART));
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse6() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.SIX, CardColor.CLUB));
+			cards.add(new Card(FaceCard.ACE, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.SIX, CardColor.CLUB));
+		cards.add(new Card(FaceCard.ACE, CardColor.HEART));
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
+	}
+	
+	@Test
+	public void testCheckChanceToOwnFullHouse7() {
+		Card newCard;
+		int fullHouseCounter = 0;
+		int maxTries = 100000;
+		float result;
+		ownCards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		cards.addAll(ownCards);
+		for (int i = 0; i < maxTries; i++) {
+			cards.clear();
+			cards.addAll(ownCards);
+			cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+			cards.add(new Card(FaceCard.ACE, CardColor.CLUB));
+			cards.add(new Card(FaceCard.ACE, CardColor.HEART));
+			while (cards.size() != 7) {
+				do {
+					newCard = null;
+					newCard = new Card((new Random()).nextInt(52));
+				} while(cards.contains(newCard));
+				cards.add(newCard);
+			}
+			if (HandChecker.hasOwnFullHouse(cards, ownCards))
+				++fullHouseCounter;
+		}
+		cards.clear();
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.SIX, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.ACE, CardColor.CLUB));
+		cards.add(new Card(FaceCard.ACE, CardColor.HEART));
+		result = (float) fullHouseCounter / (float) maxTries;
+		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
 	}
 }

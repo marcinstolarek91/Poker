@@ -58,6 +58,22 @@ public abstract class ProbabilityChecker {
 	
 	private static float calculateProbability(List<Float> positive, List<Float> negative) {
 		float probability = 0.0F;
+		for (Float f : positive) {
+			if (f.floatValue() < 0.0F)
+				positive.remove(f);
+			else if (f.floatValue() > 1.0F) {
+				positive.remove(f);
+				positive.add(new Float(1.0F));
+			}
+		}
+		for (Float f : negative) {
+			if (f.floatValue() < 0.0F)
+				negative.remove(f);
+			else if (f.floatValue() > 1.0F) {
+				negative.remove(f);
+				negative.add(new Float(1.0F));
+			}
+		}
 		for (int i = 0; i < positive.size(); i++) {
 			if (i == 0)
 				probability = (1.0F - positive.get(i).floatValue());
@@ -84,7 +100,7 @@ public abstract class ProbabilityChecker {
 		if (!goodNumbersPositive(goodNumbers))
 			return 0.0F;
 		if (goodNumbers >= allNumbers)
-			return 1.0F;
+			return 0.0F;
 		if (steps <= 0 )
 			return 0.0F;
 		else if (steps == 1) {
@@ -113,7 +129,7 @@ public abstract class ProbabilityChecker {
 		if (goodNumbers2 >= goodNumbers1)
 			return 0.0F;
 		if (goodNumbers1 >= allNumbers)
-			return 1.0F;
+			return 0.0F;
 		if (steps <= 1 )
 			return 0.0F;
 		else if (steps == 2) {
@@ -145,7 +161,7 @@ public abstract class ProbabilityChecker {
 		if (goodNumbers3 >= goodNumbers2)
 			return 0.0F;
 		if (goodNumbers1 >= allNumbers)
-			return 1.0F;
+			return 0.0F;
 		if (steps <= 2 )
 			return 0.0F;
 		else if (steps == 3) {
@@ -180,7 +196,7 @@ public abstract class ProbabilityChecker {
 		if (goodNumbers4 >= goodNumbers3)
 			return 0.0F;
 		if (goodNumbers1 >= allNumbers)
-			return 1.0F;
+			return 0.0F;
 		if (steps <= 3 )
 			return 0.0F;
 		else if (steps == 4) {
@@ -218,7 +234,7 @@ public abstract class ProbabilityChecker {
 		if (goodNumbers5 >= goodNumbers4)
 			return 0.0F;
 		if (goodNumbers1 >= allNumbers)
-			return 1.0F;
+			return 0.0F;
 		if (steps <= 4 )
 			return 0.0F;
 		else if (steps == 5) {
@@ -252,7 +268,15 @@ public abstract class ProbabilityChecker {
 		return getProbabilityOneCard(cardsToSeeNumber, cards.size(), 6); // exact six cards can give the player a pair
 	}
 	
-	//TODO - dokonczyc
+	/**
+	 * Check probability to get two pairs with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @return probability (0.00 - 1.00) to have two pairs with own card
+	 * 100F if already has own two pairs
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
 	public static float checkChanceToOwnTwoPairs(List<Card> cards, List<Card> ownCards) {
 		List<Float> probabilityListPositive = new ArrayList<>();
 		List<Float> probabilityListNegative = new ArrayList<>();
@@ -385,7 +409,7 @@ public abstract class ProbabilityChecker {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.STRAIGHT)) {
-			case 1: return 1.0F; // already has an own flush
+			case 1: return 1.0F; // already has an own straight
 			case 2: return 0.0F;
 			default: break;
 		}
@@ -546,6 +570,122 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
+	 * Check probability to get full house with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @return probability (0.00 - 1.00) to have full house with own card
+	 * 100F if already has own full house
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnFullHouse(List<Card> cards, List<Card> ownCards) {
+		List<Float> probabilityListPositive = new ArrayList<>();
+		List<Float> probabilityListNegative = new ArrayList<>();
+		int cardsToSeeNumber = 7 - cards.size();
+		int cardsOnTable = cards.size() - 2;
+		int ownFigure;
+		float temp1, temp2, temp3, temp4;
+		if (!cardsAreOK(cards, ownCards))
+			return 0.0F;
+		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.FULL_HOUSE)) {
+			case 1: return 1.0F; // already has own full house
+			case 2: return 0.0F;
+			default: break;
+		}
+		if (HandChecker.getFigureType(ownCards) == PokerHandsType.PAIR) { // own pair in hand
+			ownFigure = ownCards.get(0).faceCard.ordinal();
+			if (HandChecker.hasOwnThree(cards, ownCards)) { // own three - only new pair needed
+				if (cardsOnTable - 1 > 0)
+					probabilityListPositive.add(new Float((float)(cardsOnTable - 1) * getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3))); // pair from two new cards
+				if (cardsToSeeNumber >= 2) 
+					probabilityListPositive.add(new Float((float)((CARD_SUM / 4) - cardsOnTable) * getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 4, 3)));
+			}
+			else if (HandChecker.hasOwnTwoPairs(cards, ownCards)) { // own pair and second pair on table
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 4);
+				if (cardsToSeeNumber == 2) { // just flop on table
+					temp2 = (float)(ownFigure / (CARD_SUM / 4) - 1); // chance that card is lower than own pair
+					temp3 = (1.0F - temp2) * (1.0F - temp2) * getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 3, 2); // bigger second pair and bigger three on the table
+					temp4 = (1.0F - temp2) * getProbabilityOneCard(cardsToSeeNumber, cards.size(), 2) * getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, 3); // pair on table becomes three and there is bigger new pair on the table
+				}
+				else {
+					temp2 = 0.0F;
+					temp3 = 0.0F;
+					temp4 = 0.0F;
+				}
+				probabilityListPositive.add(new Float(temp1 * (1.0F - temp3) * (1.0F - temp4)));
+			}
+			else if (cardsToSeeNumber >= 3) { // no other pairs on the table, have to be minimum 3 cards to see
+				// three cards on the table
+				temp1 = getProbabilityThreeCards(cardsToSeeNumber, cards.size(), 48, 3, 2); // three on the table
+				temp2 = (float)((CARD_SUM / 4) - 1 - ownFigure); // amounts of figures that are bigger that own pair
+				temp3 = temp2 * getProbabilityTwoCards(cardsToSeeNumber - 3, cards.size() + 3, 4, 3);
+				probabilityListPositive.add(new Float(temp1 * (1.0F - temp3)));
+				// two cards on the table + one card to own three
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 2); // third card to three
+				temp2 = getProbabilityTwoCards(cardsToSeeNumber - 1, cards.size() + 1, 48, 3); // new pair
+				probabilityListPositive.add(new Float(temp1 * temp2));
+			}
+		}
+		else { // no pair in hand
+			if (HandChecker.hasOwnThree(cards, ownCards)) { // own three - only new pair needed
+				probabilityListPositive.add(new Float(getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3))); // pair to second own card
+				temp1 = (float)(cardsOnTable - 2) * getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3); // pair to card on the table
+				if (cardsToSeeNumber == 1) {
+					temp2 = 0.0F;
+					temp3 = 0.0F;
+				}
+				else {
+					ownFigure = HandChecker.getThree(cards).get(0).faceCard.ordinal();
+					temp2 = 1.0F - (float)(ownFigure / (CARD_SUM / 4) - 1); // chance that card is bigger than own three
+					temp3 = temp2 * getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, 2); // get three from new pair (on table) and it's bigger than own three
+				}
+				probabilityListPositive.add(new Float(temp1 * (1.0F - temp3)));
+				if (cardsToSeeNumber >= 2) // two new cards will be pair
+					probabilityListPositive.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 40, 3)));
+			}
+			else if (HandChecker.hasOwnTwoPairs(cards, ownCards)) { // own two pairs
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 4); // last card to full house
+				if (cardsToSeeNumber >= 2) {
+					if (ownCards.contains(HandChecker.getTwoPairs(cards).get(2)) || ownCards.contains(HandChecker.getTwoPairs(cards).get(3)))
+						ownFigure = HandChecker.getTwoPairs(cards).get(3).faceCard.ordinal();
+					else
+						ownFigure = HandChecker.getTwoPairs(cards).get(0).faceCard.ordinal();
+					temp2 = 1.0F - (float)(ownFigure / (CARD_SUM / 4) - 1); // chance that card is bigger than own pair
+					temp3 = temp2 * getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, 2); // full house on the table (not worse than own)
+				}
+				else {
+					temp2 = 0.0F;
+					temp3 = 0.0F;
+				}
+				probabilityListPositive.add(new Float(temp1 * (1.0F - temp3)));
+			}
+			else if (HandChecker.hasOwnPair(cards, ownCards)) { // one own pair
+				// three from pair that is own already + pair from second own card or cards on the table
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 2); // own three
+				temp2 = getProbabilityOneCard(cardsToSeeNumber - 1, cards.size() + 1, cardsOnTable * 3);
+				probabilityListPositive.add(new Float(temp1 * temp2));
+				// three from second own card or cards on the table
+				probabilityListPositive.add(new Float(getProbabilityTwoCards(cardsToSeeNumber, cards.size(), cardsOnTable * 3, cardsOnTable * 2)));
+			}
+			else if (cardsToSeeNumber >= 3) { // no pairs, have to be minimum 3 cards to see
+				// three on table and pair with own card
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 6); // two with own card
+				temp2 = getProbabilityThreeCards(cardsToSeeNumber - 1, cards.size() + 1, 44, 3, 2); // three on the table
+				probabilityListPositive.add(new Float(temp1 * temp2));
+				// two on table and three with own card
+				temp1 = getProbabilityTwoCards(cardsToSeeNumber, cards.size(), 6, 3); // three with own card
+				temp2 = getProbabilityTwoCards(cardsToSeeNumber - 2, cards.size() + 2, 44, 3); // two on the table
+				probabilityListPositive.add(new Float(temp1 * temp2));
+				// three with first own card and pair with second own card
+				temp1 = getProbabilityOneCard(cardsToSeeNumber, cards.size(), 3);
+				temp2 = getProbabilityTwoCards(cardsToSeeNumber - 1, cards.size() + 1, 3, 2); // three with own card
+				probabilityListPositive.add(new Float(2.0F * temp1 * temp2));
+			}
+		}
+		return calculateProbability(probabilityListPositive, probabilityListNegative);
+	}
+	
+	/**
 	 * Check probability to get a four with at least one own card
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
@@ -556,7 +696,7 @@ public abstract class ProbabilityChecker {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.FOUR)) {
-			case 1: return 1.0F; // already has an own three
+			case 1: return 1.0F; // already has an own four
 			case 2: return 0.0F;
 			default: break;
 		}
@@ -601,7 +741,7 @@ public abstract class ProbabilityChecker {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.POKER)) {
-			case 1: return 1.0F; // already has an own flush
+			case 1: return 1.0F; // already has an own poker
 			case 2: return 0.0F;
 			default: break;
 		}

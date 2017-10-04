@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerCards {
-	private Card playerCard1;
-	private Card playerCard2;
+	public Card ownCard1;
+	public Card ownCard2;
 	private Card flopCard1 = null;
 	private Card flopCard2 = null;
 	private Card flopCard3 = null;
@@ -15,13 +15,13 @@ public class PlayerCards {
 	private List<Card> hand = new ArrayList();
 	
 	public PlayerCards() {
-		playerCard1 = null;
-		playerCard2 = null;
+		ownCard1 = null;
+		ownCard2 = null;
 	}
 	
 	public PlayerCards(Card card1, Card card2) {
-		playerCard1 = card1;
-		playerCard2 = card2;
+		ownCard1 = card1;
+		ownCard2 = card2;
 		cards.add(card1);
 		cards.add(card2);
 	}
@@ -48,15 +48,15 @@ public class PlayerCards {
 		cards.add(river);
 	}
 	
-	public void addPlayerCards(Card card1, Card card2) {
-		if (playerCard1 != null)
-			cards.remove(playerCard1);
-		if (playerCard2 != null)
-			cards.remove(playerCard2);
+	public void addOwnCards(Card card1, Card card2) {
+		if (ownCard1 != null)
+			cards.remove(ownCard1);
+		if (ownCard2 != null)
+			cards.remove(ownCard2);
 		cards.add(card1);
 		cards.add(card2);
-		playerCard1 = card1;
-		playerCard2 = card2;
+		ownCard1 = card1;
+		ownCard2 = card2;
 	}
 	
 	public void addFlop(Card flop1, Card flop2, Card flop3) {
