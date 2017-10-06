@@ -1,12 +1,17 @@
 package cards;
 
-public class Card implements Comparable<Card> {
-	FaceCard faceCard;
-	CardColor cardColor;
+public final class Card implements Comparable<Card> {
+	public FaceCard faceCard;
+	public CardColor cardColor;
 	
 	public Card(FaceCard face, CardColor card) {
 		faceCard = face;
 		cardColor = card;
+	}
+	
+	public void changeCard(Card newCard) {
+		faceCard = newCard.faceCard;
+		cardColor = newCard.cardColor;
 	}
 	
 	public Card(int number) {
@@ -33,6 +38,10 @@ public class Card implements Comparable<Card> {
 			case 11: faceCard = FaceCard.KING; break;
 			default: faceCard = FaceCard.ACE; break;
 		}
+	}
+	
+	public int getCardNumber() {
+		return faceCard.ordinal() * 4 + cardColor.ordinal();
 	}
 
 	@Override

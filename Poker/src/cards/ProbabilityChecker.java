@@ -844,4 +844,32 @@ public abstract class ProbabilityChecker {
 		return calculateProbability(probabilityListPositive, probabilityListNegative);
 	}
 	
+	public static float probabilityOpponentHasBetterHand(List<Card> cards, List<Card> ownCards) {
+		List<Card> opponentCards = new ArrayList<>();
+		Card newCard1 = null;
+		Card newCard2 = null;
+		int opponentsBetterHands = 0;
+		int possibleHands = ((CARD_SUM - cards.size()) * (CARD_SUM - cards.size() - 1)) / 2;
+		if (!cardsAreOK(cards, ownCards))
+			return 0.0F;
+		for (int i = 0; i < CARD_SUM; i++) {
+			newCard1 = new Card(i);
+			if (!cards.contains(newCard1)) {
+				for (int j = i + 1; j < CARD_SUM; j++) {
+					newCard2 = new Card(j);
+					if (!cards.contains(newCard2)) {
+						opponentCards.add(newCard1);
+						opponentCards.add(newCard2);
+						opponentCards.addAll(cards);
+						opponentCards.removeAll(ownCards);
+						if (HandChecker.checkBetterHand(cards, opponentCards) == 2)
+							++opponentsBetterHands;
+					}
+					opponentCards.clear();
+				}
+			}
+		}
+		return (float)(opponentsBetterHands) / (float)(possibleHands);
+	}
+	
 } // end of class

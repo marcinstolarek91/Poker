@@ -88,6 +88,18 @@ public class PlayerCards {
 		riverCard = river;
 	}
 	
+	public void resetCards() {
+		cards.clear();
+		hand.clear();
+		ownCard1 = null;
+		ownCard2 = null;
+		flopCard1 = null;
+		flopCard2 = null;
+		flopCard3 = null;
+		turnCard = null;
+		riverCard = null;
+	}
+	
 	public void generateHand() {
 		hand = HandChecker.getHand(cards);
 	}

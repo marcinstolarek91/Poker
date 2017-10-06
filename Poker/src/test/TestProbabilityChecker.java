@@ -493,4 +493,27 @@ public class TestProbabilityChecker {
 		result = (float) fullHouseCounter / (float) maxTries;
 		assertEquals(result, ProbabilityChecker.checkChanceToOwnFullHouse(cards, ownCards), 0.015F);
 	}
+	
+	@Test
+	public void testProbabilityOpponentHasBetterHand1() {
+		ownCards.add(new Card(FaceCard.FIVE, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.FIVE, CardColor.SPADE));
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.FIVE, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.FIVE, CardColor.CLUB));
+		cards.add(new Card(FaceCard.FOUR, CardColor.HEART));
+		cards.add(new Card(FaceCard.TWO, CardColor.CLUB));
+		assertEquals(0.0F, ProbabilityChecker.probabilityOpponentHasBetterHand(cards, ownCards), 0.001F);
+	}
+	
+	@Test
+	public void testProbabilityOpponentHasBetterHand2() {
+		ownCards.add(new Card(FaceCard.TWO, CardColor.HEART));
+		ownCards.add(new Card(FaceCard.THREE, CardColor.SPADE));
+		cards.addAll(ownCards);
+		cards.add(new Card(FaceCard.JACK, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.ACE, CardColor.CLUB));
+		cards.add(new Card(FaceCard.QUEEN, CardColor.HEART));
+		assertEquals(0.99F, ProbabilityChecker.probabilityOpponentHasBetterHand(cards, ownCards), 0.01F);
+	}
 }
