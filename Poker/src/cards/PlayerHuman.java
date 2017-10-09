@@ -20,9 +20,9 @@ public final class PlayerHuman extends Player {
 	}
 
 	@Override
-	public PlayersTurn goThroughTurn(int playerPosition, int playersNumber, int pot, int bet, int smallBlind, int startBet) {
+	public PlayersTurn goThroughTurn(int cardsOnTable, int playerPosition, int playersNumber, int pot, int tableBet, int smallBlind, int startBet) {
 		newTurn = null;
-		betPanel.Initialization(bet, smallBlind, startBet);
+		betPanel.Initialization(tableBet, smallBlind, startBet);
 		betPanel.setVisible(true);
 		while (newTurn == null);
 		betPanel.setVisible(false);

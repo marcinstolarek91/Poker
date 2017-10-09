@@ -248,7 +248,7 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get a pair with at least one own card
+	 * Check probability to get a pair with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
 	 * @return probability (0.00 - 1.00) to have a pair with own card
@@ -257,7 +257,20 @@ public abstract class ProbabilityChecker {
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnPair(List<Card> cards, List<Card> ownCards) {
-		int cardsToSeeNumber = 7 - cards.size();
+		return checkChanceToOwnPair(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a pair with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a pair with own card
+	 * 100F if already has own pair
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnPair(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.PAIR)) {
@@ -269,18 +282,32 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get two pairs with at least one own card
+	 * Check probability to get two pairs with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have two pairs with own card
 	 * 100F if already has own two pairs
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnTwoPairs(List<Card> cards, List<Card> ownCards) {
+		return checkChanceToOwnTwoPairs(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get two pairs with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have two pairs with own card
+	 * 100F if already has own two pairs
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnTwoPairs(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		List<Float> probabilityListPositive = new ArrayList<>();
 		List<Float> probabilityListNegative = new ArrayList<>();
-		int cardsToSeeNumber = 7 - cards.size();
 		int cardsOnTable = cards.size() - 2;
 		int higherThanOwnOnTable = 0;
 		int ownPairFigure;
@@ -360,16 +387,30 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get a three with at least one own card
+	 * Check probability to get a three with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have a three with own card
 	 * 100F if already has own three
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnThree(List<Card> cards, List<Card> ownCards) {
-		int cardsToSeeNumber = 7 - cards.size();
+		return checkChanceToOwnThree(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a three with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a three with own card
+	 * 100F if already has own three
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnThree(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.THREE)) {
@@ -387,20 +428,34 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get a straight with at least one own card
+	 * Check probability to get a straight with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have a straight with own card
 	 * 100F if already has own straight
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnStraight(List<Card> cards, List<Card> ownCards) {
+		return checkChanceToOwnStraight(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a straight with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a straight with own card
+	 * 100F if already has own straight
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnStraight(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		List<Float> probabilityListPositive = new ArrayList<>();
 		List<Float> probabilityListNegative = new ArrayList<>();
 		List<List<Integer>> combinationChecked = new ArrayList<>(); // the same combination has been already checked
 		List<Integer> actualCombination = new ArrayList<>();
-		int cardsToSeeNumber = 7 - cards.size();
 		int temp;
 		int highestOwnCard;
 		boolean isOwnCardInRange;
@@ -502,16 +557,30 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get a flush with at least one own card
+	 * Check probability to get a flush with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have a flush with own card
 	 * 100F if already has own flush
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnFlush(List<Card> cards, List<Card> ownCards) {
-		int cardsToSeeNumber = 7 - cards.size();
+		return checkChanceToOwnFlush(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a flush with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a flush with own card
+	 * 100F if already has own flush
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnFlush(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		int[] color = {0, 0, 0, 0}; // number of cards in specified color
 		int highestOwnCard;
 		int higherCardNumber;
@@ -570,18 +639,32 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get full house with at least one own card
+	 * Check probability to get full house with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have full house with own card
 	 * 100F if already has own full house
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnFullHouse(List<Card> cards, List<Card> ownCards) {
+		return checkChanceToOwnFullHouse(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get full house with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have full house with own card
+	 * 100F if already has own full house
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnFullHouse(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		List<Float> probabilityListPositive = new ArrayList<>();
 		List<Float> probabilityListNegative = new ArrayList<>();
-		int cardsToSeeNumber = 7 - cards.size();
 		int cardsOnTable = cards.size() - 2;
 		int ownFigure;
 		float temp1, temp2, temp3, temp4;
@@ -686,13 +769,24 @@ public abstract class ProbabilityChecker {
 	}
 	
 	/**
-	 * Check probability to get a four with at least one own card
+	 * Check probability to get a four with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have a four with own card
 	 */
 	public static float checkChanceToOwnFour(List<Card> cards, List<Card> ownCards) {
-		int cardsToSeeNumber = 7 - cards.size();
+		return checkChanceToOwnFour(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a four with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a four with own card
+	 */
+	public static float checkChanceToOwnFour(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		if (!cardsAreOK(cards, ownCards))
 			return 0.0F;
 		switch (alreadyHasFigure(cards, ownCards, PokerHandsType.FOUR)) {
@@ -718,20 +812,34 @@ public abstract class ProbabilityChecker {
 	}
 
 	/**
-	 * Check probability to get a poker with at least one own card
+	 * Check probability to get a poker with at least one own card (from seven cards - two own and five common)
 	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
 	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
 	 * @return probability (0.00 - 1.00) to have a poker with own card
 	 * 100F if already has own poker
 	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
 	 * 0F if player has better hand (including the table only)
 	 */
 	public static float checkChanceToOwnPoker(List<Card> cards, List<Card> ownCards) {
+		return checkChanceToOwnPoker(cards, ownCards, 7 - cards.size());
+	}
+	
+	/**
+	 * Check probability to get a poker with at least one own card
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @param cardsToSeeNumber - number of cards which are calculated to get figure
+	 * @return probability (0.00 - 1.00) to have a poker with own card
+	 * 100F if already has own poker
+	 * 0F if there isn't two ownCards, cards don't contain them, there are more than seven cards (impossible)
+	 * 0F if player has better hand (including the table only)
+	 */
+	public static float checkChanceToOwnPoker(List<Card> cards, List<Card> ownCards, int cardsToSeeNumber) {
 		List<Float> probabilityListPositive = new ArrayList<>();
 		List<Float> probabilityListNegative = new ArrayList<>();
 		List<List<Integer>> combinationChecked = new ArrayList<>(); // the same combination has been already checked
 		List<Integer> actualCombination = new ArrayList<>();
-		int cardsToSeeNumber = 7 - cards.size();
 		int[] color = {0, 0, 0, 0}; // number of cards in specified color
 		int temp;
 		int highestOwnCardColor;
@@ -844,6 +952,12 @@ public abstract class ProbabilityChecker {
 		return calculateProbability(probabilityListPositive, probabilityListNegative);
 	}
 	
+	/**
+	 * Check probability that one opponent has better hand than player
+	 * @param cards - all known cards - it has to be a list with at least ownCards (has to contains them)
+	 * @param ownCards - only player cards - it has to be a list of two cards
+	 * @return probability that opponent has better hand
+	 */
 	public static float probabilityOpponentHasBetterHand(List<Card> cards, List<Card> ownCards) {
 		List<Card> opponentCards = new ArrayList<>();
 		Card newCard1 = null;

@@ -1,5 +1,7 @@
 package cards;
 
+import java.util.List;
+
 public abstract class Player {
 	public String name;
 	public PlayerCards cards;
@@ -55,7 +57,22 @@ public abstract class Player {
 		cards.resetCards();
 	}
 	
-	public abstract PlayersTurn goThroughTurn(int playerPosition, int playersNumber, int pot, int bet, int smallBlind, int startBet);
+	public List<Card> getOwnCards(){
+		return cards.getOwnCards();
+	}
+	
+	/**
+	 * Generate new player turn (kind of turn and bid)
+	 * @param cardsOnTable - number of known cards on table
+	 * @param playerPosition - player position on table (from active players) 1-10
+	 * @param playersNumber - numbers of active players
+	 * @param pot - chips in pot (include all raises)
+	 * @param tableBet - actual bet that player should call to be in game
+	 * @param smallBlind - actual small blind
+	 * @param startBet - start player bet (example big blind or bet in last turn)
+	 * @return new turn (bid NOT include last bet)
+	 */
+	public abstract PlayersTurn goThroughTurn(int cardsOnTable, int playerPosition, int playersNumber, int pot, int tableBet, int smallBlind, int startBet);
 
 	@Override
 	public int hashCode() {

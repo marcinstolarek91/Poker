@@ -88,6 +88,21 @@ public class PlayerCards {
 		riverCard = river;
 	}
 	
+	public List<Card> getOwnCards(){
+		List<Card> ownCards = new ArrayList<>();
+		ownCards.add(ownCard1);
+		ownCards.add(ownCard2);
+		return ownCards;
+	}
+	
+	public List<Card> getCards(){
+		return cards;
+	}
+	
+	public List<Card> getHand(){
+		return hand;
+	}
+	
 	public void resetCards() {
 		cards.clear();
 		hand.clear();
