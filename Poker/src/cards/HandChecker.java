@@ -7,6 +7,110 @@ public abstract class HandChecker {
 	
 	/**
 	 * 
+	 * @param card
+	 * @return card short name
+	 */
+	private static String getCardName(Card card) {
+		if (card.faceCard == FaceCard.ACE)
+			return "A";
+		if (card.faceCard == FaceCard.KING)
+			return "K";
+		if (card.faceCard == FaceCard.QUEEN)
+			return "Q";
+		if (card.faceCard == FaceCard.JACK)
+			return "J";
+		if (card.faceCard == FaceCard.TEN)
+			return "10";
+		if (card.faceCard == FaceCard.NINE)
+			return "9";
+		if (card.faceCard == FaceCard.EIGHT)
+			return "8";
+		if (card.faceCard == FaceCard.SEVEN)
+			return "7";
+		if (card.faceCard == FaceCard.SIX)
+			return "6";
+		if (card.faceCard == FaceCard.FIVE)
+			return "5";
+		if (card.faceCard == FaceCard.FOUR)
+			return "4";
+		if (card.faceCard == FaceCard.THREE)
+			return "3";
+		return "2";
+	}
+	
+	/**
+	 * 
+	 * @param hand - player hand
+	 * @param type - figure type
+	 * @return kicker name
+	 */
+	private static String getKickerName(List<Card> hand, PokerHandsType type) {
+		int kickerLength;
+		String name = "";
+		if (getFigureType(hand) == PokerHandsType.POKER)
+			return "";
+		else if (getFigureType(hand) ==  PokerHandsType.FOUR)
+			return getCardName(hand.get(0));
+		else if (getFigureType(hand) ==  PokerHandsType.FULL_HOUSE)
+			return "";
+		else if (getFigureType(hand) ==  PokerHandsType.FLUSH)
+			return "";
+		else if (getFigureType(hand) ==  PokerHandsType.STRAIGHT)
+			return "";
+		else if (getFigureType(hand) ==  PokerHandsType.THREE)
+			kickerLength = 2;
+		else if (getFigureType(hand) ==  PokerHandsType.TWO_PAIRS)
+			return getCardName(hand.get(0));
+		else if (getFigureType(hand) ==  PokerHandsType.PAIR)
+			kickerLength = 3;
+		else // high card
+			kickerLength = 4;
+		for (int i = kickerLength - 1; i >= 0; i--) {
+			name += getCardName(hand.get(i));
+			if (i > 0)
+				name += ", ";
+		}
+		return name;
+	}
+	
+	/**
+	 * Generate hand name
+	 * @param cards - player cards
+	 * @return hand name
+	 */
+	public static String getHandName(List<Card> cards) {
+		List<Card> hand = new ArrayList<>();
+		hand = getHand(cards);
+		if (hand.size() < 5)
+			return "";
+		if (getFigureType(cards) == PokerHandsType.POKER)
+			return "poker from" + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
+		if (getFigureType(cards) ==  PokerHandsType.FOUR)
+			return "four + " + getKickerName(getHand(cards), PokerHandsType.FOUR) + " kicker";
+		if (getFigureType(cards) ==  PokerHandsType.FULL_HOUSE)
+			return "full house (" + hand.get(4) + ", " + hand.get(1) + ")";
+		if (getFigureType(cards) ==  PokerHandsType.FLUSH) {
+			String name = "flush with ";
+			for (int i = 0; i < hand.size(); i++) {
+				name += getCardName(hand.get(i));
+				if (i != hand.size() - 1)
+					name += ", ";
+			}
+			return name;
+		}
+		if (getFigureType(cards) ==  PokerHandsType.STRAIGHT)
+			return "straight from" + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
+		if (getFigureType(cards) ==  PokerHandsType.THREE)
+			return "three of " + hand.get(4) + getKickerName(getHand(cards), PokerHandsType.THREE) + " kicker";
+		if (getFigureType(cards) ==  PokerHandsType.TWO_PAIRS)
+			return "two pairs (" + hand.get(4) + ", " + hand.get(2) + ") + " + getKickerName(getHand(cards), PokerHandsType.TWO_PAIRS) + " kicker";
+		if (getFigureType(cards) ==  PokerHandsType.PAIR)
+			return " pair of  " + hand.get(4) + " + " + getKickerName(getHand(cards), PokerHandsType.PAIR) + " kicker";
+		return "high card " + hand.get(4) + " + " + getKickerName(getHand(cards), PokerHandsType.HIGH_CARD) + " kicker"; // high card
+	}
+	
+	/**
+	 * 
 	 * @param cardsA - cards from player A
 	 * @param cardsB - cards from player B
 	 * @return 1 if cardsA are better
@@ -102,16 +206,18 @@ public abstract class HandChecker {
 	 * @return
 	 */
 	public static List<Card> getHand(List<Card> wholeCards, List<Card> figureCards) {
-		if (!wholeCards.containsAll(figureCards)) // wrong cards
+		List<Card> hand = new ArrayList<>();
+		hand.addAll(figureCards);
+		if (!wholeCards.containsAll(hand)) // wrong cards
 			return null;
-		if (figureCards.size() == 5)
-			return figureCards;
+		if (hand.size() == 5)
+			return hand;
 		wholeCards.sort(null);
-		for (int i = wholeCards.size() - 1; i >= 0 && figureCards.size() < 5; i--) {
-			if (!figureCards.contains(wholeCards.get(i)))
-				figureCards.add(0, wholeCards.get(i));
+		for (int i = wholeCards.size() - 1; i >= 0 && hand.size() < 5; i--) {
+			if (!hand.contains(wholeCards.get(i)))
+				hand.add(0, wholeCards.get(i));
 		}
-		return figureCards;
+		return hand;
 	}
 	
 	/**

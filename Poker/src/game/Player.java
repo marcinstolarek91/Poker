@@ -1,6 +1,10 @@
-package cards;
+package game;
 
 import java.util.List;
+
+import cards.Card;
+import cards.PlayerCards;
+import cards.PlayersTurn;
 
 public abstract class Player {
 	public String name;
@@ -8,9 +12,11 @@ public abstract class Player {
 	public int place;
 	protected int chips;
 	protected boolean active;
+	protected boolean activeAllIn; // active but cannot raise anymore (all-in)
 	
 	public Player(String name, int place) {
 		active = true;
+		activeAllIn = false;
 		this.name = name;
 		this.place = place;
 		chips = 0;
@@ -29,6 +35,16 @@ public abstract class Player {
 		chips = chipsAmount;
 	}
 	
+	public void withdrawChips(int chipsAmount) {
+		chips -= chipsAmount;
+		if (chips < 0)
+			chips = 0;
+	}
+	
+	public void addChips(int chipsAmount) {
+		chips += chipsAmount;
+	}
+	
 	public void addOwnCard(Card card1, Card card2) {
 		cards.addOwnCards(card1, card2);
 	}
@@ -37,8 +53,16 @@ public abstract class Player {
 		return active;
 	}
 	
+	public boolean isActiveAllIn() {
+		return activeAllIn;
+	}
+	
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+	
+	public void setActiveAllIn(boolean active) {
+		activeAllIn = active;
 	}
 	
 	public void addFlop(Card card1, Card card2, Card card3) {
@@ -61,10 +85,18 @@ public abstract class Player {
 		return cards.getOwnCards();
 	}
 	
+	public List<Card> getHand(){
+		return cards.getHand();
+	}
+	
+	public List<Card> getCards(){
+		return cards.getCards();
+	}
+	
 	/**
 	 * Generate new player turn (kind of turn and bid)
 	 * @param cardsOnTable - number of known cards on table
-	 * @param playerPosition - player position on table (from active players) 1-10
+	 * @param playerPosition - player position on table (from active players) 1-10 (1 - player with small blind)
 	 * @param playersNumber - numbers of active players
 	 * @param pot - chips in pot (include all raises)
 	 * @param tableBet - actual bet that player should call to be in game

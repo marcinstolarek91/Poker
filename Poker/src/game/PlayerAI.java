@@ -1,6 +1,11 @@
-package cards;
+package game;
 
 import java.util.Random;
+
+import cards.PlayersTurn;
+import cards.ProbabilityChecker;
+import cards.StartHands;
+import cards.Turn;
 
 public class PlayerAI extends Player {
 	private float bluffTendency; // 0.0 - 1.0, 0.0 is playing with no bluff
@@ -41,14 +46,22 @@ public class PlayerAI extends Player {
 		}
 		else if (newBet == startBet && newBet == tableBet)
 			return new PlayersTurn(Turn.CHECK);
-		else if (newBet == tableBet)
+		else if (newBet == tableBet) {
+			chips -= newBet - startBet;
 			return new PlayersTurn(Turn.CALL, newBet - startBet);
-		else {
-			if (newBet == chips)
-				return new PlayersTurn(Turn.ALL_IN, newBet - startBet);
-			else
-				return new PlayersTurn(Turn.RAISE, newBet - startBet);
 		}
+		else {
+			if (newBet == chips) {
+				chips = 0;
+				activeAllIn = true;
+				return new PlayersTurn(Turn.ALL_IN, newBet - startBet);
+			}
+			else {
+				chips -= newBet - startBet;
+				return new PlayersTurn(Turn.RAISE, newBet - startBet);
+			}
+		}
+		
 	}
 	
 	private int calculateMaxStartBet(int pot, int opponentNumber, int playerPosition) {

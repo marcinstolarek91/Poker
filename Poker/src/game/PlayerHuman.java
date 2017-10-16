@@ -1,4 +1,4 @@
-package cards;
+package game;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -7,6 +7,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import cards.PlayersTurn;
+import cards.Turn;
 
 public final class PlayerHuman extends Player {
 	public BetPanel betPanel;
@@ -25,6 +28,7 @@ public final class PlayerHuman extends Player {
 		betPanel.Initialization(tableBet, smallBlind, startBet);
 		betPanel.setVisible(true);
 		while (newTurn == null);
+		chips -= newTurn.bid - startBet;
 		betPanel.setVisible(false);
 		return newTurn;
 	}
@@ -142,16 +146,20 @@ public final class PlayerHuman extends Player {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			if (arg0.getSource() == foldButton)
+			if (arg0.getSource() == foldButton) {
 				newTurn = new PlayersTurn(Turn.FOLD, 0);
+				active = false;
+			}
 			else if (arg0.getSource() == checkButton)
 				newTurn = new PlayersTurn(Turn.CHECK, 0);
 			else if (arg0.getSource() == callButton)
 				newTurn = new PlayersTurn(Turn.CALL, bet - startBet);
 			else if (arg0.getSource() == raiseButton)
 				newTurn = new PlayersTurn(Turn.RAISE, playersRaise - startBet);
-			else if (arg0.getSource() == allInButton)
+			else if (arg0.getSource() == allInButton) {
 				newTurn = new PlayersTurn(Turn.ALL_IN, chips);
+				activeAllIn = true;
+			}
 			else if (arg0.getSource() == playersRaiseMinus)
 				raiseMinusButton();
 			else if (arg0.getSource() == playersRaiseMinus)
