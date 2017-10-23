@@ -47,11 +47,18 @@ public class PlayerAI extends Player {
 		else if (newBet == startBet && newBet == tableBet)
 			return new PlayersTurn(Turn.CHECK);
 		else if (newBet == tableBet) {
-			chips -= newBet - startBet;
-			return new PlayersTurn(Turn.CALL, newBet - startBet);
+			if (newBet - startBet == chips) {
+				chips = 0;
+				activeAllIn = true;
+				return new PlayersTurn(Turn.ALL_IN, newBet - startBet);
+			}
+			else {
+				chips -= newBet - startBet;
+				return new PlayersTurn(Turn.CALL, newBet - startBet);
+			}
 		}
 		else {
-			if (newBet == chips) {
+			if (newBet - startBet == chips) {
 				chips = 0;
 				activeAllIn = true;
 				return new PlayersTurn(Turn.ALL_IN, newBet - startBet);
@@ -67,7 +74,7 @@ public class PlayerAI extends Player {
 	private int calculateMaxStartBet(int pot, int opponentNumber, int playerPosition) {
 		final float positionWeight = 0.5F;
 		final float bluffVariation = 0.2F;
-		float riskFactor = seeFlopTendency * 2.0F - positionWeight * (1.0F - (float) (playerPosition / opponentNumber));
+		float riskFactor = seeFlopTendency * 2.0F - positionWeight * (1.0F - ((float)playerPosition / (float)opponentNumber));
 		float winPoints = 1.0F - StartHands.opponentHasBetterStartHand(cards.getOwnCards(), opponentNumber);
 		float bluff = bluffTendency + ((new Random()).nextFloat() - 0.5F) * bluffVariation;
 		if (bluff < 0.0F)
@@ -132,10 +139,9 @@ public class PlayerAI extends Player {
 		else if (betPercentage < 0.0F)
 			betPercentage = 0.0F;
 		newBet = (int) (betPercentage * (float) maxBet);
-		if (newBet % smallBlind != 0)
-			newBet -= newBet % smallBlind;
-		if (newBet > chips)
-			newBet = chips;
+		newBet -= newBet % smallBlind;
+		if (newBet > chips + bet)
+			newBet = chips + bet;
 		if (newBet < bet)
 			newBet = bet;
 		return newBet;

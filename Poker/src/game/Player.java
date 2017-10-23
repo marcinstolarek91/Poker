@@ -20,6 +20,7 @@ public abstract class Player {
 		this.name = name;
 		this.place = place;
 		chips = 0;
+		cards = new PlayerCards();
 	}
 	
 	public Player(String name, int place, int chips) {

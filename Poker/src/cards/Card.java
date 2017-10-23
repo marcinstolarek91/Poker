@@ -43,6 +43,24 @@ public final class Card implements Comparable<Card> {
 	public int getCardNumber() {
 		return faceCard.ordinal() * 4 + cardColor.ordinal();
 	}
+	
+	public static int getCardNumber(Card card) {
+		return card.getCardNumber();
+	}
+	
+	public String getCardPictureName() {
+		return "src\\" + getCardNumber() + ".png";
+	}
+	
+	public static String getCardPictureName(Card card) {
+		if (card == null)
+			return "src\\-1.png";
+		return "src\\" + getCardNumber(card) + ".png";
+	}
+	
+	public static String getCardPictureName(int number) {
+		return "src\\" + number + ".png";
+	}
 
 	@Override
 	public int compareTo(Card arg0) {

@@ -1,11 +1,17 @@
 package game;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -14,24 +20,38 @@ import cards.Card;
 import cards.HandChecker;
 import cards.PlayersTurn;
 import cards.Turn;
-
+// 44x56 - cards png
 public class TableInterface extends JFrame implements ActionListener {
 	private List<Player> players = new ArrayList<>();
 	private JPanel playerInterface = new JPanel();
-	private JPanel communityCards = new JPanel();
+	private JPanel communityCardsPanel = new JPanel();
+	private JLabel[] communityCard = new JLabel[5];
 	private int[] communityCardsNumbers = new int[5]; // -1 means empty slot
-	private List<JPanel> playerPanel = new ArrayList<>();
-	private JLabel humanPlayerBetPanel;
+	private List<PlayerPanel> playerPanel = new ArrayList<>();
+	private PlayerHuman human;
+	private boolean showAICards = true;
+	private boolean goAhead = false;
+	private JButton continueButton = new JButton("Continue");
+	private JLabel potLabel, betLabel;
+	private Timer turnTimer = new Timer();
 	private static final int X_HIDDEN = 5, Y_HIDDEN = 28;
+	private Player playerDealer;
 	
-	public TableInterface(int playersNumber, String[] names) {
+	public TableInterface(int playersNumber, String[] names, int startChips, int startBid) {
 		super("Poker Table");
 		setVisible(true);
+		setLayout(null);
 		setLocation(0,0);
-		setSize(1000 + X_HIDDEN, 600 + Y_HIDDEN);
+		setSize(1200 + X_HIDDEN, 850 + Y_HIDDEN);
+		setResizable(false);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		addPlayers(playersNumber, names);
+		addPlayers(playersNumber, names, startChips);
+		addPotAndBet();
 		resetCommunityCards();
+		generateCommunityCardsPanel();
+		addContinueButton();
+		playerDealer = players.get(0);
+		play(startBid, 0);
 	}
 	
 	private void resetCommunityCards() {
@@ -39,19 +59,172 @@ public class TableInterface extends JFrame implements ActionListener {
 			communityCardsNumbers[i] = -1;
 	}
 	
-	private void addPlayers(int playersNumber, String[] names) {
-		players.add(new PlayerHuman(names[0], 0));
-		for (int i = 2; i <= playersNumber; i++)
+	private void addContinueButton() {
+		continueButton.setSize(100, 30);
+		continueButton.setLocation(720 + X_HIDDEN, 100 + Y_HIDDEN);
+		continueButton.setVisible(false);
+		add(continueButton);
+		continueButton.addActionListener(this);
+	}
+	
+	private void addPlayers(int playersNumber, String[] names, int startChips) {
+		human = new PlayerHuman(names[0], 0);
+		players.add(human);
+		players.get(0).setChips(startChips);
+		addPlayerPanel(names[0], 0, true);
+		for (int i = 2; i <= playersNumber; i++) {
 			players.add(new PlayerAI(names[i - 1], i - 1));
+			players.get(i - 1).setChips(startChips);
+			addPlayerPanel(names[i - 1], i - 1, showAICards);
+		}
+		playerInterface = human.betPanel;
+		playerInterface.setSize(300, 80);
+		playerInterface.setLocation(720 + X_HIDDEN, 700 + Y_HIDDEN);
+		add(playerInterface);
+	}
+	
+	private void addPlayerPanel(String name, int place, boolean showCards) {
+		PlayerPanel newPP = new PlayerPanel(name, place, showCards);
+		newPP.setSize(120, 120);
+		switch (place) {
+			case 0: newPP.setLocation(360, 510); break;
+			case 1: newPP.setLocation(240, 510); break;
+			case 2: newPP.setLocation(120, 450); break;
+			case 3: newPP.setLocation(0, 270); break;
+			case 4: newPP.setLocation(120, 90); break;
+			case 5: newPP.setLocation(240, 30); break;
+			case 6: newPP.setLocation(360, 30); break;
+			case 7: newPP.setLocation(480, 90); break;
+			case 8: newPP.setLocation(600, 270); break;
+			case 9: newPP.setLocation(480, 450); break;
+			default: break;
+		}
+		playerPanel.add(newPP);
+		add(newPP);
+	}
+	
+	private void repaintPlayerPanels() {
+		for (PlayerPanel pp : playerPanel)
+			pp.repaint();
+	}
+	
+	private void addPotAndBet() {
+		potLabel = new JLabel("Pot: 0");
+		betLabel = new JLabel("Bet: 0");
+		potLabel.setSize(100, 50);
+		potLabel.setLocation(720 + X_HIDDEN, 0 + Y_HIDDEN);
+		betLabel.setSize(100 + X_HIDDEN, 50 + Y_HIDDEN);
+		betLabel.setLocation(720 + X_HIDDEN, 50 + Y_HIDDEN);
+		add(potLabel);
+		add(betLabel);
+	}
+	
+	private void updatePotAndBet(int pot, int bet) {
+		potLabel.setText("Pot: " + pot);
+		betLabel.setText("Bet: " + bet);
+	}
+	
+	private void generateCommunityCardsPanel() {
+		GridLayout grid = new GridLayout(1, 5, 3, 0);
+		communityCardsPanel.setLayout(grid);
+		communityCardsPanel.setSize(250, 56);
+		for (int i = 0; i < 5; i++) {
+			communityCard[i] = new JLabel(new ImageIcon(Card.getCardPictureName(communityCardsNumbers[i])));
+			communityCardsPanel.add(communityCard[i], i);
+		}
+		communityCardsPanel.setLocation(235 + X_HIDDEN, 302 + Y_HIDDEN);
+		add(communityCardsPanel);
+	}
+	
+	private void updateCommunityCards() {
+		for (int i = 0; i < 5; i++) {
+			communityCard[i].setIcon(new ImageIcon(Card.getCardPictureName(communityCardsNumbers[i])));
+		}
+	}
+	
+	private void showCards() {
+		showAICards = true;
+		for (int i = 0; i < playerPanel.size(); i++)
+			playerPanel.get(i).reset(true, false);
+	}
+	
+	private void hideCards() {
+		showAICards = false;
+		for (int i = 0; i < playerPanel.size(); i++) {
+			if (players.get(i) instanceof PlayerHuman)
+				playerPanel.get(i).reset(true, false);
+			else
+				playerPanel.get(i).reset(false, false);
+		}
 	}
 	
 	private void waitForAccept() { // accept by player
-		
+		Statement.printInfo("Wait for accept");
+		goAhead = false;
+		continueButton.setVisible(true);
+		while(!goAhead)
+			Delay.sleep(5);
+		goAhead = false;
+		continueButton.setVisible(false);
 	}
 	
+	private void generateNewDealer() {
+		if (!players.contains(playerDealer)) { // playerDealer lost all chips
+			int place = playerDealer.place + 1;
+			playerDealer = null;
+			for (;playerDealer == null; place++) {
+				if (place > 10)
+					place = 0;
+				for (int i = 0; i < players.size(); i++) {
+					if (players.get(i).place == place) {
+						playerDealer = players.get(i);
+					}
+				}				
+			}
+		}
+		else {
+			if (players.indexOf(playerDealer) == players.size() - 1)
+				playerDealer = players.get(0);
+			else
+				playerDealer = players.get(players.indexOf(playerDealer) + 1);
+		}
+	}
+	
+	private void play(int startSmallBlind, int deals) {
+		turnTimer.cancel();
+		turnTimer.purge();
+		turnTimer = new Timer();
+		turnTimer.schedule(new TurnTask(startSmallBlind, deals), 0);
+	}
+		
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+		if (arg0.getSource() == continueButton) {
+			goAhead = true;
+		}
+	}
+	
+	private class TurnTask extends TimerTask {
+		int smallBlind;
+		int deals;
+		
+		public TurnTask(int smallBlind, int deals) {
+			this.smallBlind = smallBlind;
+			this.deals = deals;
+		}
+		
+		@Override
+		public void run() {
+			++deals;
+			Statement.printInfo("New deal: " + deals);
+			Deal deal = new Deal(smallBlind, playerDealer.place);
+			if (deals % 10 == 0)
+				smallBlind *= 2;
+			while (!deal.isEndOfDeal())
+				Delay.sleep(5);
+			generateNewDealer();
+			play(smallBlind, deals);
+		}
 	}
 
 	public class Deal {
@@ -63,7 +236,7 @@ public class TableInterface extends JFrame implements ActionListener {
 		private int dealerPosition;
 		private int communityCardsNumber;
 		private boolean endOfDeal;
-		// TODO - show cards or no
+		private Timer playTimer = new Timer();
 		
 		/**
 		 * Create a new deal (new cards, new auction)
@@ -77,14 +250,19 @@ public class TableInterface extends JFrame implements ActionListener {
 			numberOfAuctions = 1;
 			communityCardsNumber = 0;
 			endOfDeal = false;
+			resetCommunityCards();
+			updateCommunityCards();
+			cardShuffle();
 			for (Player player : players) { // set all players active
 				player.setActive(true);
 				player.setActiveAllIn(false);
+				playerPanel.get(players.indexOf(player)).setChips(player.getChips());
 			}
 			auction.add(new AuctionList(players, calculateStartPreFlopPosition(), 0));
-			cardShuffle();
 			getBlindsFromPlayers();
-			playDeal();
+			repaintPlayerPanels();
+			repaint();
+			playTimer.schedule(new DealTask(), 0);
 		}
 		
 		/**
@@ -106,11 +284,6 @@ public class TableInterface extends JFrame implements ActionListener {
 					dealerIndex = i;
 					break;
 				}
-			}
-			while (!players.get(dealerIndex).active || players.get(dealerIndex).activeAllIn) { // while dealer is not active
-				--dealerIndex;
-				if (dealerIndex < 0)
-					dealerIndex = players.size() - 1;
 			}
 			return dealerIndex;
 		}
@@ -142,14 +315,18 @@ public class TableInterface extends JFrame implements ActionListener {
 		private void getBlindsFromPlayers() {
 			int smallBlindIndex = auction.get(0).activePlayers.size() - 2;
 			int bigBlindIndex = auction.get(0).activePlayers.size() - 1;
+			int playerSmallBlindIndex = players.indexOf(auction.get(0).activePlayers.get(smallBlindIndex));
+			int playerBigBlindIndex = players.indexOf(auction.get(0).activePlayers.get(bigBlindIndex));
 			if (auction.get(0).activePlayers.get(smallBlindIndex).getChips() <= smallBlind) {
 				// big blind player has less money than small blind player
 				if (auction.get(0).activePlayers.get(bigBlindIndex).getChips() <= auction.get(0).activePlayers.get(smallBlindIndex).getChips()) {
+					playerPanel.get(playerBigBlindIndex).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips());
+					playerPanel.get(playerSmallBlindIndex).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips());
 					auction.get(0).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips(), smallBlindIndex);
 					auction.get(0).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips(), bigBlindIndex);
 					auction.get(0).activePlayers.get(bigBlindIndex).setChips(0);
 					auction.get(0).activePlayers.get(bigBlindIndex).setActiveAllIn(true);
-					// new auction
+										// new auction
 					++numberOfAuctions;
 					auction.add(new AuctionList(players, calculateStartPreFlopPosition(), 1));
 					// chips from small blind and big blind players are equal
@@ -161,7 +338,8 @@ public class TableInterface extends JFrame implements ActionListener {
 					auction.get(0).activePlayers.get(smallBlindIndex).setActiveAllIn(true);
 				}
 				else if (auction.get(0).activePlayers.get(bigBlindIndex).getChips() <= bigBlind) { // more than small blind player but not enough
-					auction.get(0).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips(), smallBlindIndex);
+					playerPanel.get(playerBigBlindIndex).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips());
+					playerPanel.get(playerSmallBlindIndex).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips());
 					auction.get(0).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips(), bigBlindIndex);
 					auction.get(0).activePlayers.get(smallBlindIndex).setChips(0);
 					auction.get(0).activePlayers.get(smallBlindIndex).setActiveAllIn(true);
@@ -173,18 +351,24 @@ public class TableInterface extends JFrame implements ActionListener {
 					auction.get(0).activePlayers.get(bigBlindIndex).setActiveAllIn(true);
 				}
 				else { // big blind player has enough money
+					playerPanel.get(playerBigBlindIndex).addBet(bigBlind);
+					playerPanel.get(playerSmallBlindIndex).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips());
 					auction.get(0).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips(), smallBlindIndex);
 					auction.get(0).addBet(auction.get(0).activePlayers.get(smallBlindIndex).getChips(), bigBlindIndex);
 					auction.get(0).activePlayers.get(smallBlindIndex).setChips(0);
 					auction.get(0).activePlayers.get(smallBlindIndex).setActiveAllIn(true);
+					auction.get(0).changeHasTurn(true, bigBlindIndex);
 					// new auction
 					++numberOfAuctions;
 					auction.add(new AuctionList(players, calculateStartPreFlopPosition(), 1));
 					auction.get(1).addBet(bigBlind - auction.get(0).getBiggestBet(), auction.get(1).activePlayers.size() - 1);
 					auction.get(0).activePlayers.get(bigBlindIndex).withdrawChips(bigBlind);
+					auction.get(1).changeHasTurn(true, auction.get(1).activePlayers.size() - 1);
 				}
 			}
 			else if (auction.get(0).activePlayers.get(bigBlindIndex).getChips() <= bigBlind) {
+				playerPanel.get(playerBigBlindIndex).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips());
+				playerPanel.get(playerSmallBlindIndex).addBet(smallBlind);
 				// big blind player has less money than small blind
 				if (auction.get(0).activePlayers.get(bigBlindIndex).getChips() <= auction.get(0).activePlayers.get(smallBlindIndex).getChips()) {
 					auction.get(0).addBet(auction.get(0).activePlayers.get(bigBlindIndex).getChips(), smallBlindIndex);
@@ -196,6 +380,7 @@ public class TableInterface extends JFrame implements ActionListener {
 					auction.add(new AuctionList(players, calculateStartPreFlopPosition(), 1));
 					auction.get(1).addBet(smallBlind - auction.get(0).getBiggestBet(), auction.get(1).activePlayers.size() - 1);
 					auction.get(0).activePlayers.get(smallBlindIndex).withdrawChips(smallBlind);
+					auction.get(1).changeHasTurn(true, auction.get(1).activePlayers.size() - 1);
 				}
 				else { // more than small blind
 					auction.get(0).addBet(smallBlind, smallBlindIndex);
@@ -207,14 +392,19 @@ public class TableInterface extends JFrame implements ActionListener {
 					++numberOfAuctions;
 					auction.add(new AuctionList(players, calculateStartPreFlopPosition(), 1));
 				}
+				auction.get(0).changeHasTurn(true, smallBlindIndex);
 			}
 			else {
+				playerPanel.get(playerBigBlindIndex).addBet(bigBlind);
+				playerPanel.get(playerSmallBlindIndex).addBet(smallBlind);
 				auction.get(0).addBet(smallBlind, smallBlindIndex);
 				auction.get(0).activePlayers.get(smallBlindIndex).withdrawChips(smallBlind);
 				auction.get(0).addBet(bigBlind, bigBlindIndex);
 				auction.get(0).activePlayers.get(bigBlindIndex).withdrawChips(bigBlind);
+				auction.get(0).changeHasTurn(true, smallBlindIndex);
+				auction.get(0).changeHasTurn(true, bigBlindIndex);
 			}
-			
+			updatePotAndBet(getSummaryPot(), getTableBet());
 		}
 		
 		private boolean auctionFinished() {
@@ -253,9 +443,29 @@ public class TableInterface extends JFrame implements ActionListener {
 		}
 		
 		private void setHasTurnAtAuction(Player player, boolean status) {
+			if (!player.active || player.activeAllIn)
+				status = false;
 			for (int i = 0; i < auction.size(); i++) {
-				auction.get(i).changeHasTurn(false, player);
+				auction.get(i).changeHasTurn(status, player);
 			}
+		}
+		
+		private void setTurnToOthersPlayer(Player player) {
+			for (int i = 0; i < auction.size(); i++) {
+				for (int j = 0; j < auction.get(i).activePlayers.size(); j++) {
+					if (!auction.get(i).activePlayers.get(j).equals(player) && auction.get(i).activePlayers.get(j).active && !auction.get(i).activePlayers.get(j).activeAllIn)
+						setHasTurnAtAuction(auction.get(i).activePlayers.get(j), true);
+				}
+			}
+		}
+		
+		private int calculateActivePlayers() {
+			int active = 0;
+			for (Player p : players) {
+				if (p.active)
+					++active;
+			}
+			return active;
 		}
 		
 		private void removePlayerFromAuction(Player player) {
@@ -281,17 +491,29 @@ public class TableInterface extends JFrame implements ActionListener {
 					additionalBet -= temp;
 				}
 			}
+			auction.get(numberOfAuctions - 1).addBet(additionalBet, auction.get(numberOfAuctions - 1).activePlayers.indexOf(player));
 		}
 		
 		private void analyzeTurn(Player player, PlayersTurn turn) {
-			if (turn.turn == Turn.FOLD)
+			if (turn.turn == Turn.FOLD) {
 				removePlayerFromAuction(player);
+				playerPanel.get(players.indexOf(player)).setStatus("Passed");
+			}
 			else if (turn.turn == Turn.CHECK)
 				setHasTurnAtAuction(player, false);
-			else if (turn.turn == Turn.CALL || turn.turn == Turn.RAISE)
+			else if (turn.turn == Turn.CALL || turn.turn == Turn.RAISE) {
 				addBetAtAuction(turn.bid, player);
+				if (turn.turn == Turn.RAISE)
+					setTurnToOthersPlayer(player);
+				setHasTurnAtAuction(player, false);
+				playerPanel.get(players.indexOf(player)).addBet(turn.bid);
+				updatePotAndBet(getSummaryPot(), getTableBet());
+			}
 			else { // ALL_IN
 				addBetAtAuction(turn.bid, player);
+				playerPanel.get(players.indexOf(player)).addBet(turn.bid);
+				Statement.printInfo("Added bet: " + turn.bid);
+				playerPanel.get(players.indexOf(player)).setStatus("All-in");
 				++numberOfAuctions;
 				if (communityCardsNumber == 0)
 					auction.add(new AuctionList(players, calculateStartPreFlopPosition(), numberOfAuctions - 1));
@@ -308,7 +530,11 @@ public class TableInterface extends JFrame implements ActionListener {
 							auction.get(numberOfAuctions - 1).addBet(diff, playerTemp);
 					}
 				}
+				setTurnToOthersPlayer(player);
+				setHasTurnAtAuction(player, false);
+				updatePotAndBet(getSummaryPot(), getTableBet());
 			}
+			repaintPlayerPanels();
 		}
 		
 		private void goThroughAuction() {
@@ -316,86 +542,192 @@ public class TableInterface extends JFrame implements ActionListener {
 			int playerPosition;
 			int playersNumber;
 			Player player = null;
-			PlayersTurn turn;
+			PlayersTurn turn = null;
 			if (auction.isEmpty()) // not preflop
 				auction.add(new AuctionList(players, calculateFlopAndLaterPosition(), 0));
-			do {
+			while(!auctionFinished()) {
+				player = auction.get(numberOfAuctions - 1).activePlayers.get(iter);
+				Statement.printProgrammerInfo(auction.get(numberOfAuctions - 1).activePlayers.get(iter).name + " have turned");
 				if (auction.get(numberOfAuctions - 1).hasPlayerTurn(iter)) { // player has turn
-					playerPosition = auction.get(numberOfAuctions - 1).activePlayers.size() - iter;
+					playerPosition = auction.get(numberOfAuctions - 1).activePlayers.indexOf(player) + 1;
+					if (communityCardsNumber == 0)
+						playerPosition += 2;
+					if (playerPosition > auction.get(numberOfAuctions - 1).activePlayers.size())
+						playerPosition -= auction.get(numberOfAuctions - 1).activePlayers.size();
 					playersNumber = auction.get(numberOfAuctions - 1).activePlayers.size();
-					player = auction.get(numberOfAuctions - 1).activePlayers.get(iter);
+					playerPanel.get(players.indexOf(player)).setPlayerMoveView();
 					// player makes turn
 					turn = auction.get(numberOfAuctions - 1).activePlayers.get(iter).goThroughTurn(communityCardsNumber, playerPosition, playersNumber, getSummaryPot(), getTableBet(), smallBlind, getPlayerBet(player));
 					analyzeTurn(player, turn);
+					Delay.sleep(1500);
+					playerPanel.get(players.indexOf(player)).resetPlayerMoveView();
 				}
 				if (player.isActive() && !player.isActiveAllIn()) // no incrementation if player has been removed
 					++iter;
 				if (iter >= auction.get(numberOfAuctions - 1).activePlayers.size())
 					iter = 0;
-			}while(!auctionFinished() || auction.get(numberOfAuctions - 1).activePlayers.size() == 1);
+			}
+			Statement.printProgrammerInfo("Auction finished");
 		}
 		
 		private void rewardWinners() {
 			for (int i = 0; i < auction.size(); i++) {
-				if (i == auction.size() - 1 && auction.get(i).activePlayers.size() == 1) { // no cards shown
-					auction.get(i).activePlayers.get(0).addChips(auction.get(i).getPot());
-					Statement.printInfo("" + auction.get(i).activePlayers.get(0).name + " earns " + auction.get(i).getPot() + " chips.");
-				}
-				else { // cards shown
-					List<Integer> winnerList = new ArrayList<>();
-					winnerList.add(new Integer(0));
-					int result;
-					for (int j = 1; j < auction.get(i).activePlayers.size(); j++) {
-						result = HandChecker.checkBetterHand(auction.get(i).activePlayers.get(j).getCards(), auction.get(i).activePlayers.get(winnerList.get(0).intValue()).getCards());
-						if (result == 1) // new better hand
-							winnerList.clear();
-						if (result < 2) // equal or new better hand
-							winnerList.add(new Integer(j));
+				if (auction.get(i).getPot() > 0 && !auction.get(i).activePlayers.isEmpty()) {
+					if (i == auction.size() - 1 && auction.get(i).activePlayers.size() == 1) { // no cards shown
+						auction.get(i).activePlayers.get(0).addChips(auction.get(i).getPot());
+						Statement.printInfo(auction.get(i).activePlayers.get(0).name + " earns " + auction.get(i).getPot() + " chips.");
 					}
-					for (int j = 0; j < winnerList.size(); j++) {
-						auction.get(i).activePlayers.get(winnerList.get(j).intValue()).addChips(auction.get(i).getPot() / winnerList.size());
-						Statement.printInfo("" + auction.get(i).activePlayers.get(winnerList.get(j).intValue()).name + " earns " + auction.get(i).getPot() + " chips with " + HandChecker.getHandName(auction.get(i).activePlayers.get(winnerList.get(j).intValue()).getCards()) + ".");
+					else { // cards shown
+						List<Integer> winnerList = new ArrayList<>();
+						showCards();
+						winnerList.add(new Integer(0));
+						int result;
+						for (int j = 1; j < auction.get(i).activePlayers.size(); j++) {
+							result = HandChecker.checkBetterHand(auction.get(i).activePlayers.get(j).getCards(), auction.get(i).activePlayers.get(winnerList.get(0).intValue()).getCards());
+							if (result == 1) // new better hand
+								winnerList.clear();
+							if (result < 2) // equal or new better hand
+								winnerList.add(new Integer(j));
+						}
+						for (int j = 0; j < winnerList.size(); j++) {
+							auction.get(i).activePlayers.get(winnerList.get(j).intValue()).addChips(auction.get(i).getPot() / winnerList.size());
+							Statement.printInfo("" + auction.get(i).activePlayers.get(winnerList.get(j).intValue()).name + " earns " + auction.get(i).getPot() + " chips with " + HandChecker.getHandName(auction.get(i).activePlayers.get(winnerList.get(j).intValue()).getCards()) + ".");
+						}
 					}
 				}
 			}
+			repaintPlayerPanels();
 			waitForAccept();
 		}
 		
 		private void deleteBankrupts() {
 			for (int i = 0; i < players.size(); i++) {
 				if (players.get(i).getChips() <= 0) {
+					if (players.get(i).equals(playerDealer))
+						generateNewDealer();
 					players.remove(i);
+					remove(playerPanel.get(i));
+					playerPanel.remove(i);
 					--i;
+				}
+			}
+			if (playerPanel.size() > players.size()) { // cleaning view
+				for (int i = playerPanel.size() - 1; i >= 0; i++) {
+					for (int j = 0; j < players.size(); j++) {
+						if (playerPanel.get(i).getName().equals(players.get(j).name))
+							break;
+						if (j == players.size() - 1) { // delete bankrupts from view
+							remove(playerPanel.get(i));
+							playerPanel.remove(i);
+						}
+					}
 				}
 			}
 		}
 		
+		private void cleanAuctions() {
+			for (int i = auction.size() - 1; i >= 0 ; i--) {
+				if (auction.get(i).getPot() == 0) {
+					auction.remove(i);
+					--numberOfAuctions;
+					Statement.printProgrammerInfo("Removed auction with no pot (index " + i + "). Remains " + auction.size() + " auctions.");
+				}
+				else if (auction.get(i).activePlayers.size() == 1) { // only one player - auction to delete
+					Player player = auction.get(i).activePlayers.get(0);
+					int index = players.indexOf(player);
+					playerPanel.get(index).setStatus("Active");
+					player.addChips(auction.get(i).getPot());
+					playerPanel.get(index).setChips(player.getChips());
+					auction.remove(i);
+					--numberOfAuctions;
+					Statement.printProgrammerInfo("Removed auction with only one player (index " + i + "). Remains " + auction.size() + " auctions.");
+				}
+			}
+		}
+		
+		private void prepareNewAuction() {
+			boolean isAllIn = false;
+			for (int i = 0; i < auction.get(numberOfAuctions - 1).activePlayers.size(); i++) {
+				if (auction.get(numberOfAuctions - 1).activePlayers.get(i).activeAllIn) {
+					isAllIn = true;
+					break;
+				}
+			}
+			++numberOfAuctions;
+			auction.add(new AuctionList(players, calculateFlopAndLaterPosition(), 0));
+			if (!isAllIn) {
+				int pot = auction.get(numberOfAuctions - 2).getPot();
+				auction.get(numberOfAuctions - 1).setStartPot(pot);
+				auction.remove(auction.size() - 2);
+				--numberOfAuctions;
+			}
+		}
+		
+		private void prepareToNewAuction() {
+			if (auction.isEmpty())
+				return;
+			cleanAuctions();
+			prepareNewAuction();
+			for (AuctionList a : auction) {
+				for (Player p : a.activePlayers) {
+					a.clearBet(p);
+				}
+			}
+			updatePotAndBet(getSummaryPot(), getTableBet());
+			for (PlayerPanel pp : playerPanel)
+				pp.resetBet();
+			repaintPlayerPanels();
+		}
+		
+		/**
+		 * All-in players and one player with no all-in, but he cannot bet anymore
+		 * @return
+		 */
+		private boolean onlyAllInPlayersSurvived() {
+			int allInCount = 0;
+			int surviversCount = 0;
+			for (Player p : players) {
+				if (p.active)
+					++surviversCount;
+				if (p.activeAllIn)
+					++allInCount;
+			}
+			return (allInCount + 1 >= surviversCount) ? true : false;
+		}
+		
 		private void playDeal() {
+			waitForAccept();
 			goThroughAuction(); // pre flop auction
-			if (auction.get(numberOfAuctions - 1).activePlayers.size() == 1) { // there is a winner on pre flop
+			if (calculateActivePlayers() == 1) { // there is a winner on pre flop
 				rewardWinners();
 				deleteBankrupts();
 				return;
 			}
+			waitForAccept();
+			prepareToNewAuction();
 			addCommunityCards(3);
-			waitForAccept();
-			goThroughAuction(); // after flop auction
-			if (auction.get(numberOfAuctions - 1).activePlayers.size() == 1) { // there is a winner on flop
+			if (!onlyAllInPlayersSurvived())
+				goThroughAuction(); // after flop auction
+			if (calculateActivePlayers() == 1) { // there is a winner on flop
 				rewardWinners();
 				deleteBankrupts();
 				return;
 			}
-			addCommunityCards(1);
 			waitForAccept();
-			goThroughAuction(); // after turn auction
-			if (auction.get(numberOfAuctions - 1).activePlayers.size() == 1) { // there is a winner on turn
+			prepareToNewAuction();
+			addCommunityCards(1);
+			if (!onlyAllInPlayersSurvived())
+				goThroughAuction(); // after turn auction
+			if (calculateActivePlayers() == 1) { // there is a winner on turn
 				rewardWinners();
 				deleteBankrupts();
 				return;
 			}
-			addCommunityCards(1);
 			waitForAccept();
-			goThroughAuction(); // after river auction
+			prepareToNewAuction();
+			addCommunityCards(1);
+			if (!onlyAllInPlayersSurvived())
+				goThroughAuction(); // after river auction
 			rewardWinners(); // reward winners
 			deleteBankrupts();
 		}
@@ -406,11 +738,17 @@ public class TableInterface extends JFrame implements ActionListener {
 			for (int i = 0; i < players.size(); i++) {
 				for (int j = 0; j < 2; j++) {
 					do {
-						newCard[j] = new Random().nextInt(52);
+						newCard[j] = (new Random()).nextInt(52);
 					}while(usedCards.contains(new Integer(newCard[j])));
 					usedCards.add(new Integer(newCard[j]));
 				}
 				players.get(i).addOwnCard(new Card(newCard[0]), new Card(newCard[1]));
+				playerPanel.get(i).shuffleNewCard(new Card(newCard[0]), new Card(newCard[1]));
+				if (players.get(i) instanceof PlayerHuman)
+					playerPanel.get(i).reset(true, true);
+				else
+					playerPanel.get(i).reset(showAICards, true);
+				playerPanel.get(i).setStatus("Active");
 			}
 		}
 		
@@ -430,6 +768,7 @@ public class TableInterface extends JFrame implements ActionListener {
 				communityCardsNumbers[0] = newCard[0];
 				communityCardsNumbers[1] = newCard[1];
 				communityCardsNumbers[2] = newCard[2];
+				updateCommunityCards();
 			}
 			else if (cardsNumber == 1) {
 				if (players.get(0).cards.getCards().size() == 5) { // turn
@@ -437,12 +776,24 @@ public class TableInterface extends JFrame implements ActionListener {
 						player.addTurn(new Card(newCard[0]));
 					communityCardsNumbers[3] = newCard[0];
 				}
-				if (players.get(0).cards.getCards().size() == 6) { // river
+				else if (players.get(0).cards.getCards().size() == 6) { // river
 					for (Player player : players)
 						player.addRiver(new Card(newCard[0]));
 					communityCardsNumbers[4] = newCard[0];
 				}
+				updateCommunityCards();
 			}
+			communityCardsNumber += cardsNumber;
+		}
+		
+		private class DealTask extends TimerTask {
+			@Override
+			public void run() {
+				Statement.printInfo("Play deal");
+				playDeal();
+				endOfDeal = true;
+			}
+			
 		}
 	} // end of class Deal
 }

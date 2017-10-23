@@ -37,6 +37,7 @@ public class GameInterface extends JFrame implements ActionListener {
 		GridLayout grid = new GridLayout(5, 2, 2, 2);
 		for (int i = 1; i <= 9; i++)
 			opponentsNumber.addItem(new Integer(i));
+		opponentsNumber.setSelectedItem(new Integer(5));
 		newTable = new JPanel(grid);
 		newTable.add(new JLabel("Player name"), 0);
 		newTable.add(playerName, 1);
@@ -55,11 +56,38 @@ public class GameInterface extends JFrame implements ActionListener {
 		statistics.add(new JLabel("Statistics - to do in future"), 0);
 		statistics.setBackground(Color.WHITE);
 	}
+	
+	private String[] createNames(int playersNumber) {
+		String[] names = new String[playersNumber];
+		names[0] = playerName.getText();
+		if (playersNumber >= 2)
+			names[1] = "John";
+		if (playersNumber >= 3)
+			names[2] = "Adam";
+		if (playersNumber >= 4)
+			names[3] = "Jim";
+		if (playersNumber >= 5)
+			names[4] = "Mark";
+		if (playersNumber >= 6)
+			names[5] = "Andrew";
+		if (playersNumber >= 7)
+			names[6] = "Thomas";
+		if (playersNumber >= 8)
+			names[7] = "Joey";
+		if (playersNumber >= 9)
+			names[8] = "Robert";
+		if (playersNumber >= 10)
+			names[9] = "Matthew";
+		return names;
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == startButton) {
-			//TODO - open new table
+			int opponentNumbers = opponentsNumber.getItemAt(opponentsNumber.getSelectedIndex()).intValue();
+			int chips = (new Integer(startChips.getText())).intValue();
+			int startBet = (new Integer(startBid.getText())).intValue();
+			new TableInterface(opponentNumbers + 1, createNames(opponentNumbers + 1), chips, startBet);
 		}
 	}
 	

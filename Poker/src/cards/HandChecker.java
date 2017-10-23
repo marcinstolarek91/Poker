@@ -84,29 +84,29 @@ public abstract class HandChecker {
 		if (hand.size() < 5)
 			return "";
 		if (getFigureType(cards) == PokerHandsType.POKER)
-			return "poker from" + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
+			return "poker from " + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
 		if (getFigureType(cards) ==  PokerHandsType.FOUR)
 			return "four + " + getKickerName(getHand(cards), PokerHandsType.FOUR) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.FULL_HOUSE)
-			return "full house (" + hand.get(4) + ", " + hand.get(1) + ")";
+			return "full house (" + getCardName(hand.get(4)) + ", " + getCardName(hand.get(1)) + ")";
 		if (getFigureType(cards) ==  PokerHandsType.FLUSH) {
 			String name = "flush with ";
-			for (int i = 0; i < hand.size(); i++) {
+			for (int i = hand.size() - 1; i >= hand.size() - 5; i--) {
 				name += getCardName(hand.get(i));
-				if (i != hand.size() - 1)
+				if (i != hand.size() - 5)
 					name += ", ";
 			}
 			return name;
 		}
 		if (getFigureType(cards) ==  PokerHandsType.STRAIGHT)
-			return "straight from" + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
+			return "straight from " + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
 		if (getFigureType(cards) ==  PokerHandsType.THREE)
-			return "three of " + hand.get(4) + getKickerName(getHand(cards), PokerHandsType.THREE) + " kicker";
+			return "three of " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.THREE) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.TWO_PAIRS)
-			return "two pairs (" + hand.get(4) + ", " + hand.get(2) + ") + " + getKickerName(getHand(cards), PokerHandsType.TWO_PAIRS) + " kicker";
+			return "two pairs (" + getCardName(hand.get(4)) + ", " + getCardName(hand.get(2)) + ") + " + getKickerName(getHand(cards), PokerHandsType.TWO_PAIRS) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.PAIR)
-			return " pair of  " + hand.get(4) + " + " + getKickerName(getHand(cards), PokerHandsType.PAIR) + " kicker";
-		return "high card " + hand.get(4) + " + " + getKickerName(getHand(cards), PokerHandsType.HIGH_CARD) + " kicker"; // high card
+			return " pair of  " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.PAIR) + " kicker";
+		return "high card " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.HIGH_CARD) + " kicker"; // high card
 	}
 	
 	/**
@@ -120,7 +120,6 @@ public abstract class HandChecker {
 	public static int checkBetterHand(List<Card> cardsA, List<Card> cardsB) {
 		PokerHandsType figureA = getFigureType(cardsA);
 		PokerHandsType figureB = getFigureType(cardsB);
-		int size = (cardsA.size() >= cardsB.size() ? cardsB.size() : cardsA.size());
 		if (figureA.ordinal() > figureB.ordinal())
 			return 1;
 		else if (figureA.ordinal() < figureB.ordinal())
@@ -128,6 +127,7 @@ public abstract class HandChecker {
 		else {
 			cardsA = getHand(cardsA);
 			cardsB = getHand(cardsB);
+			int size = (cardsA.size() >= cardsB.size() ? cardsB.size() : cardsA.size());
 			if (cardsA.equals(cardsB))
 				return 0;
 			for (int i = 1; i <= size; i++) {

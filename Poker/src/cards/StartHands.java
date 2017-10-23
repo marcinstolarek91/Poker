@@ -6,7 +6,7 @@ public abstract class StartHands {
 	public static final int COMBINATIONS = 169;
 	
 	public static float opponentHasBetterStartHand(List<Card> ownCards, int opponentNumbers) {
-		return 1.0F - (float) Math.pow(1.0 - (double) ((ownCardStartPoints(ownCards) - 1) / COMBINATIONS), (double) opponentNumbers);
+		return 1.0F - (float) Math.pow(1.0 - (((double)ownCardStartPoints(ownCards) - 1) / (double)COMBINATIONS), (double) opponentNumbers);
 	}
 	
 	public static int ownCardStartPoints(List<Card> ownCards) {

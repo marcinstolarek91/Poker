@@ -1,5 +1,6 @@
 package game;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,11 +26,13 @@ public final class PlayerHuman extends Player {
 	@Override
 	public PlayersTurn goThroughTurn(int cardsOnTable, int playerPosition, int playersNumber, int pot, int tableBet, int smallBlind, int startBet) {
 		newTurn = null;
-		betPanel.Initialization(tableBet, smallBlind, startBet);
+		betPanel.Initialization(tableBet, smallBlind, startBet, tableBet);
 		betPanel.setVisible(true);
-		while (newTurn == null);
-		chips -= newTurn.bid - startBet;
+		while (newTurn == null) // TODO - nie sprawdza na biezaco warunku
+			Delay.sleep(5);
+		chips -= newTurn.bid;
 		betPanel.setVisible(false);
+		betPanel.reset();
 		return newTurn;
 	}
 
@@ -43,8 +46,10 @@ public final class PlayerHuman extends Player {
 		private JButton playersRaisePlus = new JButton("+");
 		private JLabel playersRaiseValue = new JLabel("0");
 		private JLabel playersChipsAmount = new JLabel("Chips: " + chips);
+		private JLabel empty = new JLabel("");
 		private int bet, smallBlind, startBet;
 		private int playersRaise;
+		private int minimumPlayersRaise;
 		private boolean checkButtonVisibility, callButtonVisibility, raiseButtonVisibility, allInButtonVisibility;
 		
 		public BetPanel() {
@@ -52,12 +57,21 @@ public final class PlayerHuman extends Player {
 			addButtons();
 		}
 		
-		public void Initialization(int bet, int smallBlind, int startBet) {
+		public void reset() {
+			bet = 0;
+			smallBlind = 0;
+			startBet = 0;
+			playersRaise = 0;
+		}
+		
+		public void Initialization(int bet, int smallBlind, int startBet, int tableBet) {
 			this.bet = bet;
 			this.smallBlind = smallBlind;
 			this.startBet = startBet;
-			playersRaise = startBet;
-			playersRaiseValue.setText("" + playersRaise);
+			playersRaise = tableBet;
+			minimumPlayersRaise = tableBet;
+			playersRaiseValue.setText("Bet: " + playersRaise);
+			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
 			buttonVisibility(bet, startBet);
 			arrangeElements();
 		}
@@ -71,15 +85,28 @@ public final class PlayerHuman extends Player {
 				add(checkButton, 1);
 			else if (callButtonVisibility)
 				add(callButton, 1);
-			if (raiseButtonVisibility) {
+			else
+				add(new JLabel(""), 1);
+			if (raiseButtonVisibility)
 				add(raiseButton, 2);
+			else
+				add(new JLabel(""), 2);
+			if (allInButtonVisibility)
+				add(allInButton, 3);
+			else
+				add(new JLabel(""), 3);
+			if (raiseButtonVisibility) {
 				add(playersRaiseMinus, 4);
 				add(playersRaisePlus, 5);
 				add(playersRaiseValue, 6);
 			}
-			if (allInButtonVisibility)
-				add(allInButton, 3);
+			else {
+				add(new JLabel(""), 4);
+				add(new JLabel(""), 5);
+				add(new JLabel(""), 6);
+			}
 			add(playersChipsAmount, 7);
+			raiseButton.setEnabled(false);
 		}
 		
 		private void addButtons() {
@@ -130,17 +157,20 @@ public final class PlayerHuman extends Player {
 		
 		private void raiseMinusButton() {
 			playersRaise -= smallBlind;
-			if (playersRaise < startBet)
-				playersRaise = startBet;
-			playersRaiseValue.setText("" + playersRaise);
+			if (playersRaise <= minimumPlayersRaise) {
+				playersRaise = minimumPlayersRaise;
+				raiseButton.setEnabled(false);
+			}
+			playersRaiseValue.setText("Bet: " + playersRaise);
 			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
 		}
 		
 		private void raisePlusButton() {
+			raiseButton.setEnabled(true);
 			playersRaise += smallBlind;
 			if (playersRaise - startBet > chips)
 				playersRaise = chips + startBet;
-			playersRaiseValue.setText("" + playersRaise);
+			playersRaiseValue.setText("Bet: " + playersRaise);
 			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
 		}
 
@@ -152,17 +182,29 @@ public final class PlayerHuman extends Player {
 			}
 			else if (arg0.getSource() == checkButton)
 				newTurn = new PlayersTurn(Turn.CHECK, 0);
-			else if (arg0.getSource() == callButton)
-				newTurn = new PlayersTurn(Turn.CALL, bet - startBet);
-			else if (arg0.getSource() == raiseButton)
-				newTurn = new PlayersTurn(Turn.RAISE, playersRaise - startBet);
+			else if (arg0.getSource() == callButton) {
+				if ((playersRaise - startBet) == chips) {
+					newTurn = new PlayersTurn(Turn.ALL_IN, chips);
+					activeAllIn = true;
+				}
+				else
+					newTurn = new PlayersTurn(Turn.CALL, bet - startBet);
+			}
+			else if (arg0.getSource() == raiseButton && playersRaise > minimumPlayersRaise) {
+				if ((playersRaise - startBet) == chips) {
+					newTurn = new PlayersTurn(Turn.ALL_IN, chips);
+					activeAllIn = true;
+				}
+				else
+					newTurn = new PlayersTurn(Turn.RAISE, playersRaise - startBet);
+			}
 			else if (arg0.getSource() == allInButton) {
 				newTurn = new PlayersTurn(Turn.ALL_IN, chips);
 				activeAllIn = true;
 			}
 			else if (arg0.getSource() == playersRaiseMinus)
 				raiseMinusButton();
-			else if (arg0.getSource() == playersRaiseMinus)
+			else if (arg0.getSource() == playersRaisePlus)
 				raisePlusButton();
 		}
 	} // end of BetPanel class

@@ -8,7 +8,7 @@ public class AuctionList {
 	public List<Boolean> hasTurn = new ArrayList<>();
 	public List<Integer> playerBets = new ArrayList<>();
 	private int pot;
-	private int biggestBet;
+	//private int biggestBet;
 	private int level; // level of auction list; it can be some of auction list when players make all-in turn
 	
 	/**
@@ -18,7 +18,7 @@ public class AuctionList {
 	 * @param level - auction list level
 	 */
 	public AuctionList(List<Player> players, int actualTurn, int level) {
-		if (actualTurn < 0 || actualTurn >= activePlayers.size())
+		if (actualTurn < 0 || actualTurn >= players.size())
 			actualTurn = 0;
 		for (int i = actualTurn; i < players.size(); i++) {
 			if (players.get(i).active && !players.get(i).activeAllIn) {
@@ -35,7 +35,7 @@ public class AuctionList {
 			}
 		}
 		pot = 0;
-		biggestBet = 0;
+		//biggestBet = 0;
 		this.level = level;
 	}
 	
@@ -43,12 +43,21 @@ public class AuctionList {
 		return pot;
 	}
 	
-	public int getBiggestBet() {
-		return biggestBet;
-	}
-	
 	public int getLevel() {
 		return level;
+	}
+	
+	public void setStartPot(int startPot) {
+		pot = startPot;
+	}
+	
+	public int getBiggestBet() {
+		int biggestBet = 0;
+		for (Integer b : playerBets) {
+			if (b.intValue() > biggestBet)
+				biggestBet = b.intValue();
+		}
+		return biggestBet;
 	}
 	
 	/**
@@ -71,7 +80,7 @@ public class AuctionList {
 	 * @return true if player has turn, false otherwise
 	 */
 	public boolean hasPlayerTurn(int index) {
-		if (hasTurn.get(index) == new Boolean(true))
+		if (hasTurn.get(index)) 
 			return true;
 		else
 			return false;
@@ -82,7 +91,7 @@ public class AuctionList {
 	 * @return true if auction is finished
 	 */
 	public boolean auctionFinished() {
-		return !hasTurn.contains(new Boolean(true));
+		return !hasTurn.contains(true);
 	}
 	
 	/**
@@ -107,14 +116,8 @@ public class AuctionList {
 			return;
 		changeBet(bet + playerBets.get(index).intValue(), index);
 		pot += bet;
-		if (playerBets.get(index) > biggestBet) {
-			biggestBet = playerBets.get(index);
-			for (int i = 0; i < activePlayers.size(); i++) { // player raised - others have to turn again
-				if (activePlayers.get(i).active && !activePlayers.get(i).activeAllIn && i != index)
-					changeHasTurn(true, index);
-			}
-		}
-		changeHasTurn(false, index);
+		/*if (playerBets.get(index) > biggestBet)
+			biggestBet = playerBets.get(index);*/
 	}
 	
 	/**
@@ -128,6 +131,7 @@ public class AuctionList {
 		if (playerBets.get(index).intValue() > limitBet) {
 			reducedValue = playerBets.get(index).intValue() - limitBet;
 			changeBet(limitBet, index);
+			pot -= reducedValue;
 		}
 		return reducedValue;
 	}
@@ -140,6 +144,15 @@ public class AuctionList {
 	private void changeBet(int newBet, int index) {
 		playerBets.add(index, new Integer(newBet));
 		playerBets.remove(index + 1);
+	}
+	
+	public void clearBet(Player player) {
+		if (activePlayers.indexOf(player) >= 0)
+			clearBet(activePlayers.indexOf(player));
+	}
+	
+	public void clearBet(int index) {
+		changeBet(0, index);
 	}
 	
 	/**
