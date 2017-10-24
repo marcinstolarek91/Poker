@@ -964,8 +964,6 @@ public abstract class ProbabilityChecker {
 		Card newCard2 = null;
 		int opponentsBetterHands = 0;
 		int possibleHands = ((CARD_SUM - cards.size()) * (CARD_SUM - cards.size() - 1)) / 2;
-		if (!cardsAreOK(cards, ownCards))
-			return 0.0F;
 		for (int i = 0; i < CARD_SUM; i++) {
 			newCard1 = new Card(i);
 			if (!cards.contains(newCard1)) {

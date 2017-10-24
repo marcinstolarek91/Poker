@@ -22,9 +22,9 @@ public class PlayerAI extends Player {
 
 	public PlayerAI(String name, int place) {
 		super(name, place);
-		bluffTendency = 0.5F;
-		riskSusceptibility = 0.5F;
-		seeFlopTendency = 0.5F;
+		bluffTendency = 0.25F;
+		riskSusceptibility = 0.25F;
+		seeFlopTendency = 0.8F;
 	}
 	
 	public void setPlayerCharacteristics(float bluff, float risk, float seeFlop) {
@@ -37,9 +37,9 @@ public class PlayerAI extends Player {
 	public PlayersTurn goThroughTurn(int cardsOnTable, int playerPosition, int playersNumber, int pot, int tableBet, int smallBlind, int startBet) {
 		int newBet;
 		if (cardsOnTable > 0)
-			newBet = calculateBet(startBet, calculateMaxBet(pot, playersNumber, playerPosition), smallBlind);
+			newBet = calculateBet(startBet, calculateMaxBet(pot, playersNumber - 1, playerPosition), smallBlind, tableBet);
 		else // no flop
-			newBet = calculateBet(startBet, calculateMaxStartBet(pot, playersNumber, playerPosition), smallBlind);
+			newBet = calculateBet(startBet, calculateMaxStartBet(pot, playersNumber - 1, playerPosition), smallBlind, tableBet);		
 		if (newBet < tableBet) {
 			active = false;
 			return new PlayersTurn(Turn.FOLD);
@@ -74,13 +74,15 @@ public class PlayerAI extends Player {
 	private int calculateMaxStartBet(int pot, int opponentNumber, int playerPosition) {
 		final float positionWeight = 0.5F;
 		final float bluffVariation = 0.2F;
-		float riskFactor = seeFlopTendency * 2.0F - positionWeight * (1.0F - ((float)playerPosition / (float)opponentNumber));
-		float winPoints = 1.0F - StartHands.opponentHasBetterStartHand(cards.getOwnCards(), opponentNumber);
+		float riskFactor = seeFlopTendency * 2.0F - positionWeight * (1.0F - ((float)playerPosition / (float)(opponentNumber + 1)));
+		float chanceToWin = 1.0F - StartHands.opponentHasBetterStartHand(cards.getOwnCards(), opponentNumber);
 		float bluff = bluffTendency + ((new Random()).nextFloat() - 0.5F) * bluffVariation;
+		float winPoints = 0.0F;
 		if (bluff < 0.0F)
 			bluff = 0.0F;
 		if (riskFactor < 0.0F)
 			riskFactor = 0.0F;
+		winPoints = chanceToWin;
 		winPoints *= riskFactor;
 		winPoints += bluff;
 		return (int) ((float) (pot * winPoints));
@@ -116,30 +118,52 @@ public class PlayerAI extends Player {
 	}
 	
 	private int calculateMaxBet(int pot, int opponentNumber, int playerPosition) {
-		final float positionWeight = 0.5F;
-		final float bluffVariation = 0.2F;
+		final float positionWeight = 0.4F;
+		final float bluffVariation = 0.4F;
 		float handPoints = calculateHandPoints();
-		float riskFactor = riskSusceptibility * 2.0F - positionWeight * (1.0F - (float) (playerPosition / opponentNumber));
-		float winPoints = 1.0F - calculateOpponentsBetterHand(opponentNumber);
+		float riskFactor = riskSusceptibility * 2.0F - positionWeight * (1.0F - ((float)playerPosition / (float)(opponentNumber + 1)));
+		float chanceToWin = 1.0F - calculateOpponentsBetterHand(opponentNumber);
 		float bluff = bluffTendency + ((new Random()).nextFloat() - 0.5F) * bluffVariation;
+		float winPoints = 0.0F;
 		if (bluff < 0.0F)
 			bluff = 0.0F;
 		if (riskFactor < 0.0F)
 			riskFactor = 0.0F;
+		winPoints = chanceToWin * riskFactor;
 		winPoints += bluff;
-		handPoints *= riskFactor;
-		return (int) ((float) pot * (winPoints + handPoints));
+		return (int) ((float) pot * (winPoints + handPoints * riskFactor));
 	}
 	
-	private int calculateBet(int bet, int maxBet, int smallBlind) {
+	private int calculateBet(int bet, int maxBet, int smallBlind, int tableBet) {
 		int newBet;
 		float betPercentage = (float) (new Random()).nextGaussian() + 0.8F; // calculate percentage of max bet
+		float correction = (float) (new Random()).nextGaussian() + 0.7F; // newBet correction - when raise or all-in
+		if (correction < 0.0F)
+			correction = 0.0F;
 		if (betPercentage > 1.0F)
 			betPercentage = 1.0F;
 		else if (betPercentage < 0.0F)
 			betPercentage = 0.0F;
-		newBet = (int) (betPercentage * (float) maxBet);
-		newBet -= newBet % smallBlind;
+		if (maxBet < tableBet)
+			newBet = bet;
+		else {
+			newBet = (int) (betPercentage * (float) maxBet);
+			newBet -= newBet % smallBlind;
+			if (newBet < tableBet)
+				newBet = tableBet; // don't lose occasion due to probability - just call
+		}
+		if (newBet > tableBet) { // player can raise or all-in
+			int difference = newBet - tableBet;
+			if ((float)difference / (float)tableBet < 0.15F)
+				newBet = tableBet;
+			else {
+				difference = (int)((float)difference * correction);
+				newBet -= difference;
+				newBet -= newBet % smallBlind;
+				if (newBet < tableBet)
+					newBet = tableBet; // don't lose occasion due to probability - just call
+			}
+		}
 		if (newBet > chips + bet)
 			newBet = chips + bet;
 		if (newBet < bet)

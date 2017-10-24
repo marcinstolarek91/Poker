@@ -29,7 +29,7 @@ public class TableInterface extends JFrame implements ActionListener {
 	private int[] communityCardsNumbers = new int[5]; // -1 means empty slot
 	private List<PlayerPanel> playerPanel = new ArrayList<>();
 	private PlayerHuman human;
-	private boolean showAICards = true;
+	private boolean showAICards = false;
 	private boolean goAhead = false;
 	private JButton continueButton = new JButton("Continue");
 	private JLabel potLabel, betLabel;
@@ -139,27 +139,33 @@ public class TableInterface extends JFrame implements ActionListener {
 	private void updateCommunityCards() {
 		for (int i = 0; i < 5; i++) {
 			communityCard[i].setIcon(new ImageIcon(Card.getCardPictureName(communityCardsNumbers[i])));
+			communityCard[i].repaint();
+			Statement.printProgrammerInfo("updateCommunityCards: " + communityCardsNumbers[i]);
+		}
+		communityCardsPanel.repaint();
+		repaint();
+	}
+	
+	private void showCards(int...playerIndex) {
+		for (int i = 0; i < playerPanel.size(); i++) {
+			for (int j = 0; j < playerIndex.length; j++) {
+				if (i == playerIndex[j])
+					playerPanel.get(i).reset(true, false);
+			}
 		}
 	}
 	
-	private void showCards() {
-		showAICards = true;
-		for (int i = 0; i < playerPanel.size(); i++)
-			playerPanel.get(i).reset(true, false);
-	}
-	
 	private void hideCards() {
-		showAICards = false;
 		for (int i = 0; i < playerPanel.size(); i++) {
 			if (players.get(i) instanceof PlayerHuman)
 				playerPanel.get(i).reset(true, false);
 			else
-				playerPanel.get(i).reset(false, false);
+				playerPanel.get(i).reset(showAICards, false);
 		}
 	}
 	
 	private void waitForAccept() { // accept by player
-		Statement.printInfo("Wait for accept");
+		Statement.printProgrammerInfo("Wait for accept");
 		goAhead = false;
 		continueButton.setVisible(true);
 		while(!goAhead)
@@ -218,8 +224,11 @@ public class TableInterface extends JFrame implements ActionListener {
 			++deals;
 			Statement.printInfo("New deal: " + deals);
 			Deal deal = new Deal(smallBlind, playerDealer.place);
-			if (deals % 10 == 0)
-				smallBlind *= 2;
+			if (deals % 10 == 0) {
+				smallBlind *= 3;
+				smallBlind /= 2;
+				smallBlind -= smallBlind % 5;
+			}
 			while (!deal.isEndOfDeal())
 				Delay.sleep(5);
 			generateNewDealer();
@@ -512,7 +521,7 @@ public class TableInterface extends JFrame implements ActionListener {
 			else { // ALL_IN
 				addBetAtAuction(turn.bid, player);
 				playerPanel.get(players.indexOf(player)).addBet(turn.bid);
-				Statement.printInfo("Added bet: " + turn.bid);
+				Statement.printProgrammerInfo("Added bet: " + turn.bid);
 				playerPanel.get(players.indexOf(player)).setStatus("All-in");
 				++numberOfAuctions;
 				if (communityCardsNumber == 0)
@@ -579,7 +588,10 @@ public class TableInterface extends JFrame implements ActionListener {
 					}
 					else { // cards shown
 						List<Integer> winnerList = new ArrayList<>();
-						showCards();
+						int[] playerIndexToShow = new int[auction.get(i).activePlayers.size()];
+						for (int j = 0; j < playerIndexToShow.length; j++)
+							playerIndexToShow[j] = players.indexOf(auction.get(i).activePlayers.get(j));
+						showCards(playerIndexToShow);
 						winnerList.add(new Integer(0));
 						int result;
 						for (int j = 1; j < auction.get(i).activePlayers.size(); j++) {
@@ -591,13 +603,14 @@ public class TableInterface extends JFrame implements ActionListener {
 						}
 						for (int j = 0; j < winnerList.size(); j++) {
 							auction.get(i).activePlayers.get(winnerList.get(j).intValue()).addChips(auction.get(i).getPot() / winnerList.size());
-							Statement.printInfo("" + auction.get(i).activePlayers.get(winnerList.get(j).intValue()).name + " earns " + auction.get(i).getPot() + " chips with " + HandChecker.getHandName(auction.get(i).activePlayers.get(winnerList.get(j).intValue()).getCards()) + ".");
+							Statement.printInfo("" + auction.get(i).activePlayers.get(winnerList.get(j).intValue()).name + " earns " + auction.get(i).getPot() / winnerList.size() + " chips with " + HandChecker.getHandName(auction.get(i).activePlayers.get(winnerList.get(j).intValue()).getCards()) + ".");
 						}
 					}
 				}
 			}
 			repaintPlayerPanels();
 			waitForAccept();
+			hideCards();
 		}
 		
 		private void deleteBankrupts() {
@@ -742,6 +755,7 @@ public class TableInterface extends JFrame implements ActionListener {
 					}while(usedCards.contains(new Integer(newCard[j])));
 					usedCards.add(new Integer(newCard[j]));
 				}
+				players.get(i).cards.resetCards();
 				players.get(i).addOwnCard(new Card(newCard[0]), new Card(newCard[1]));
 				playerPanel.get(i).shuffleNewCard(new Card(newCard[0]), new Card(newCard[1]));
 				if (players.get(i) instanceof PlayerHuman)
@@ -754,8 +768,7 @@ public class TableInterface extends JFrame implements ActionListener {
 		
 		private void addCommunityCards(int cardsNumber) {
 			int[] newCard = new int[3];
-			if (cardsNumber != 1 && cardsNumber != 3)
-				return;
+			Statement.printProgrammerInfo("addCommunityCards: " + cardsNumber);
 			for (int i = 0; i < cardsNumber; i++) {
 				do {
 					newCard[i] = new Random().nextInt(52);
@@ -768,28 +781,30 @@ public class TableInterface extends JFrame implements ActionListener {
 				communityCardsNumbers[0] = newCard[0];
 				communityCardsNumbers[1] = newCard[1];
 				communityCardsNumbers[2] = newCard[2];
-				updateCommunityCards();
+				Statement.printProgrammerInfo("Flop added");
 			}
 			else if (cardsNumber == 1) {
 				if (players.get(0).cards.getCards().size() == 5) { // turn
 					for (Player player : players)
 						player.addTurn(new Card(newCard[0]));
 					communityCardsNumbers[3] = newCard[0];
+					Statement.printProgrammerInfo("Turn added");
 				}
 				else if (players.get(0).cards.getCards().size() == 6) { // river
 					for (Player player : players)
 						player.addRiver(new Card(newCard[0]));
 					communityCardsNumbers[4] = newCard[0];
+					Statement.printProgrammerInfo("River added");
 				}
-				updateCommunityCards();
 			}
 			communityCardsNumber += cardsNumber;
+			updateCommunityCards();
 		}
 		
 		private class DealTask extends TimerTask {
 			@Override
 			public void run() {
-				Statement.printInfo("Play deal");
+				Statement.printProgrammerInfo("Play deal");
 				playDeal();
 				endOfDeal = true;
 			}

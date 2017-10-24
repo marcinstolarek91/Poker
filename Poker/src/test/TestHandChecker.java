@@ -321,4 +321,24 @@ public class TestHandChecker {
 		cards.add(new Card(FaceCard.JACK, CardColor.CLUB));
 		assertFalse(HandChecker.hasOwnTwoPairsEachPair(cards,  ownCards));
 	}
+	
+	@Test
+	public void testBetterHand() {
+		List<Card> winnerCards = new ArrayList<>();
+		List<Card> looserCards = new ArrayList<>();
+		winnerCards.add(new Card(FaceCard.SIX, CardColor.SPADE));
+		winnerCards.add(new Card(FaceCard.TEN, CardColor.DIAMOND));
+		
+		looserCards.add(new Card(FaceCard.KING, CardColor.CLUB));
+		looserCards.add(new Card(FaceCard.KING, CardColor.DIAMOND));
+		
+		cards.add(new Card(FaceCard.SEVEN, CardColor.SPADE));
+		cards.add(new Card(FaceCard.NINE, CardColor.SPADE));
+		cards.add(new Card(FaceCard.SEVEN, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.EIGHT, CardColor.CLUB));
+		cards.add(new Card(FaceCard.QUEEN, CardColor.CLUB));
+		winnerCards.addAll(cards);
+		looserCards.addAll(cards);
+		assertEquals(1, HandChecker.checkBetterHand(winnerCards, looserCards));
+	}
 }
