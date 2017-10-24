@@ -1,5 +1,6 @@
 package game;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,6 +26,8 @@ public class TableInterface extends JFrame implements ActionListener {
 	private JPanel playerInterface = new JPanel();
 	private JPanel communityCardsPanel = new JPanel();
 	private JLabel[] communityCard = new JLabel[5];
+	private JPanel infoPanel = new JPanel();
+	private JLabel[] infoLabel = new JLabel[10];
 	private int[] communityCardsNumbers = new int[5]; // -1 means empty slot
 	private List<PlayerPanel> playerPanel = new ArrayList<>();
 	private PlayerHuman human;
@@ -34,6 +36,7 @@ public class TableInterface extends JFrame implements ActionListener {
 	private JButton continueButton = new JButton("Continue");
 	private JLabel potLabel, betLabel;
 	private Timer turnTimer = new Timer();
+	private Timer infoTimer = new Timer();
 	private static final int X_HIDDEN = 5, Y_HIDDEN = 28;
 	private Player playerDealer;
 	
@@ -50,8 +53,37 @@ public class TableInterface extends JFrame implements ActionListener {
 		resetCommunityCards();
 		generateCommunityCardsPanel();
 		addContinueButton();
+		addInfoPanel();
 		playerDealer = players.get(0);
 		play(startBid, 0);
+		infoTimer.schedule(new InfoTask(), 0, 500);
+	}
+	
+	private void addInfoPanel() {
+		GridLayout grid = new GridLayout(10, 1);
+		infoPanel.setSize(600, 300);
+		infoPanel.setLocation(X_HIDDEN, 650 + Y_HIDDEN);
+		infoPanel.setVisible(true);
+		infoPanel.setLayout(grid);
+		for (int i = 0; i < 10; i++) {
+			infoLabel[i] = new JLabel("");
+			infoLabel[i].setSize(560, 30);
+			infoLabel[i].setLocation(0, 20 * i);
+			infoLabel[i].setBackground(Color.WHITE);
+			infoLabel[i].setForeground(Color.RED);
+			infoPanel.add(infoLabel[i]);
+		}
+		add(infoPanel);
+	}
+	
+	private void updateInfoPanel() {
+		for (int i = 0; i < 10; i++) {
+			if (Statement.infoList.size() > i) {
+				infoLabel[i].setText(Statement.infoList.get(i));
+				infoLabel[i].repaint();
+			}
+		}
+		infoPanel.repaint();
 	}
 	
 	private void resetCommunityCards() {
@@ -87,16 +119,16 @@ public class TableInterface extends JFrame implements ActionListener {
 		PlayerPanel newPP = new PlayerPanel(name, place, showCards);
 		newPP.setSize(120, 120);
 		switch (place) {
-			case 0: newPP.setLocation(360, 510); break;
-			case 1: newPP.setLocation(240, 510); break;
-			case 2: newPP.setLocation(120, 450); break;
-			case 3: newPP.setLocation(0, 270); break;
-			case 4: newPP.setLocation(120, 90); break;
-			case 5: newPP.setLocation(240, 30); break;
-			case 6: newPP.setLocation(360, 30); break;
-			case 7: newPP.setLocation(480, 90); break;
-			case 8: newPP.setLocation(600, 270); break;
-			case 9: newPP.setLocation(480, 450); break;
+			case 0: newPP.setLocation(360 + X_HIDDEN, 510 + Y_HIDDEN); break;
+			case 1: newPP.setLocation(240 + X_HIDDEN, 510 + Y_HIDDEN); break;
+			case 2: newPP.setLocation(120 + X_HIDDEN, 450 + Y_HIDDEN); break;
+			case 3: newPP.setLocation(0 + X_HIDDEN, 270 + Y_HIDDEN); break;
+			case 4: newPP.setLocation(120 + X_HIDDEN, 90 + Y_HIDDEN); break;
+			case 5: newPP.setLocation(240 + X_HIDDEN, 30 + Y_HIDDEN); break;
+			case 6: newPP.setLocation(360 + X_HIDDEN, 30 + Y_HIDDEN); break;
+			case 7: newPP.setLocation(480 + X_HIDDEN, 90 + Y_HIDDEN); break;
+			case 8: newPP.setLocation(600 + X_HIDDEN, 270 + Y_HIDDEN); break;
+			case 9: newPP.setLocation(480 + X_HIDDEN, 450 + Y_HIDDEN); break;
 			default: break;
 		}
 		playerPanel.add(newPP);
@@ -207,6 +239,13 @@ public class TableInterface extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == continueButton) {
 			goAhead = true;
+		}
+	}
+	
+	private class InfoTask extends TimerTask{
+		@Override
+		public void run() {
+			updateInfoPanel();
 		}
 	}
 	
@@ -582,7 +621,7 @@ public class TableInterface extends JFrame implements ActionListener {
 		private void rewardWinners() {
 			for (int i = 0; i < auction.size(); i++) {
 				if (auction.get(i).getPot() > 0 && !auction.get(i).activePlayers.isEmpty()) {
-					if (i == auction.size() - 1 && auction.get(i).activePlayers.size() == 1) { // no cards shown
+					if (/*i == auction.size() - 1 && */auction.get(i).activePlayers.size() == 1) { // no cards shown
 						auction.get(i).activePlayers.get(0).addChips(auction.get(i).getPot());
 						Statement.printInfo(auction.get(i).activePlayers.get(0).name + " earns " + auction.get(i).getPot() + " chips.");
 					}

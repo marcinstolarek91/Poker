@@ -82,8 +82,7 @@ public class PlayerAI extends Player {
 			bluff = 0.0F;
 		if (riskFactor < 0.0F)
 			riskFactor = 0.0F;
-		winPoints = chanceToWin;
-		winPoints *= riskFactor;
+		winPoints = 0.5F * chanceToWin * (1.0F + riskFactor);
 		winPoints += bluff;
 		return (int) ((float) (pot * winPoints));
 	}
@@ -129,7 +128,7 @@ public class PlayerAI extends Player {
 			bluff = 0.0F;
 		if (riskFactor < 0.0F)
 			riskFactor = 0.0F;
-		winPoints = chanceToWin * riskFactor;
+		winPoints = 0.5F * chanceToWin * (1.0F + riskFactor);
 		winPoints += bluff;
 		return (int) ((float) pot * (winPoints + handPoints * riskFactor));
 	}
@@ -137,7 +136,7 @@ public class PlayerAI extends Player {
 	private int calculateBet(int bet, int maxBet, int smallBlind, int tableBet) {
 		int newBet;
 		float betPercentage = (float) (new Random()).nextGaussian() + 0.8F; // calculate percentage of max bet
-		float correction = (float) (new Random()).nextGaussian() + 0.7F; // newBet correction - when raise or all-in
+		float correction = (float) (new Random()).nextGaussian() + 0.55F; // newBet correction - when raise or all-in
 		if (correction < 0.0F)
 			correction = 0.0F;
 		if (betPercentage > 1.0F)
