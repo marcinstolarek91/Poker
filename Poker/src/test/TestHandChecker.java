@@ -341,4 +341,24 @@ public class TestHandChecker {
 		looserCards.addAll(cards);
 		assertEquals(1, HandChecker.checkBetterHand(winnerCards, looserCards));
 	}
+	
+	@Test
+	public void testBetterHand2() {
+		List<Card> winnerCards1 = new ArrayList<>();
+		List<Card> winnerCards2 = new ArrayList<>();
+		winnerCards1.add(new Card(FaceCard.SIX, CardColor.HEART));
+		winnerCards1.add(new Card(FaceCard.KING, CardColor.SPADE));
+		
+		winnerCards2.add(new Card(FaceCard.EIGHT, CardColor.DIAMOND));
+		winnerCards2.add(new Card(FaceCard.KING, CardColor.DIAMOND));
+		
+		cards.add(new Card(FaceCard.TEN, CardColor.CLUB));
+		cards.add(new Card(FaceCard.TEN, CardColor.DIAMOND));
+		cards.add(new Card(FaceCard.TWO, CardColor.SPADE));
+		cards.add(new Card(FaceCard.TEN, CardColor.SPADE));
+		cards.add(new Card(FaceCard.TWO, CardColor.DIAMOND));
+		winnerCards1.addAll(cards);
+		winnerCards2.addAll(cards);
+		assertEquals(0, HandChecker.checkBetterHand(winnerCards1, winnerCards2));
+	}
 }

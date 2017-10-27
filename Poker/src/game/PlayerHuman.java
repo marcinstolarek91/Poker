@@ -71,7 +71,11 @@ public final class PlayerHuman extends Player {
 			playersRaise = tableBet;
 			minimumPlayersRaise = tableBet;
 			playersRaiseValue.setText("Bet: " + playersRaise);
-			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			if (chips - playersRaise + startBet >= 0)
+				playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			else
+				playersChipsAmount.setText("Chips: 0");
+			callButton.setText("Call " + tableBet);
 			buttonVisibility(bet, startBet);
 			arrangeElements();
 		}
@@ -162,7 +166,10 @@ public final class PlayerHuman extends Player {
 				raiseButton.setEnabled(false);
 			}
 			playersRaiseValue.setText("Bet: " + playersRaise);
-			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			if (chips - playersRaise + startBet >= 0)
+				playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			else
+				playersChipsAmount.setText("Chips: 0");
 		}
 		
 		private void raisePlusButton() {
@@ -171,7 +178,10 @@ public final class PlayerHuman extends Player {
 			if (playersRaise - startBet > chips)
 				playersRaise = chips + startBet;
 			playersRaiseValue.setText("Bet: " + playersRaise);
-			playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			if (chips - playersRaise + startBet >= 0)
+				playersChipsAmount.setText("Chips: " + (chips - playersRaise + startBet));
+			else
+				playersChipsAmount.setText("Chips: 0");
 		}
 
 		@Override

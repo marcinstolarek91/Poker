@@ -87,10 +87,20 @@ public class AuctionList {
 	}
 	
 	/**
-	 * Check if auction is finished (no one has turn)
+	 * Check if auction is finished (no one has turn or other players fold)
 	 * @return true if auction is finished
 	 */
 	public boolean auctionFinished() {
+		int activeNumber = 0;
+		int activeIndex = -1;
+		for (int i = 0; i < activePlayers.size(); i++) {
+			if (activePlayers.get(i).active && !activePlayers.get(i).activeAllIn) {
+				++activeNumber;
+				activeIndex = i;
+			}
+		}
+		if (activeNumber == 1 && playerBets.get(activeIndex).intValue() >= getBiggestBet())
+			return true;
 		return !hasTurn.contains(true);
 	}
 	
@@ -116,8 +126,6 @@ public class AuctionList {
 			return;
 		changeBet(bet + playerBets.get(index).intValue(), index);
 		pot += bet;
-		/*if (playerBets.get(index) > biggestBet)
-			biggestBet = playerBets.get(index);*/
 	}
 	
 	/**

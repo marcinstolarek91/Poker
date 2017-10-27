@@ -136,7 +136,7 @@ public class PlayerAI extends Player {
 	private int calculateBet(int bet, int maxBet, int smallBlind, int tableBet) {
 		int newBet;
 		float betPercentage = (float) (new Random()).nextGaussian() + 0.8F; // calculate percentage of max bet
-		float correction = (float) (new Random()).nextGaussian() + 0.55F; // newBet correction - when raise or all-in
+		float correction = (float) (new Random()).nextGaussian() + 0.45F; // newBet correction - when raise or all-in
 		if (correction < 0.0F)
 			correction = 0.0F;
 		if (betPercentage > 1.0F)

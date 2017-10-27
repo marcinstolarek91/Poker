@@ -86,7 +86,7 @@ public abstract class HandChecker {
 		if (getFigureType(cards) == PokerHandsType.POKER)
 			return "poker from " + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
 		if (getFigureType(cards) ==  PokerHandsType.FOUR)
-			return "four + " + getKickerName(getHand(cards), PokerHandsType.FOUR) + " kicker";
+			return "four + " + getKickerName(hand, PokerHandsType.FOUR) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.FULL_HOUSE)
 			return "full house (" + getCardName(hand.get(4)) + ", " + getCardName(hand.get(1)) + ")";
 		if (getFigureType(cards) ==  PokerHandsType.FLUSH) {
@@ -101,12 +101,12 @@ public abstract class HandChecker {
 		if (getFigureType(cards) ==  PokerHandsType.STRAIGHT)
 			return "straight from " + getCardName(hand.get(0)) + " to " + getCardName(hand.get(4));
 		if (getFigureType(cards) ==  PokerHandsType.THREE)
-			return "three of " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.THREE) + " kicker";
+			return "three of " + getCardName(hand.get(4)) + " + " + getKickerName(hand, PokerHandsType.THREE) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.TWO_PAIRS)
-			return "two pairs (" + getCardName(hand.get(4)) + ", " + getCardName(hand.get(2)) + ") + " + getKickerName(getHand(cards), PokerHandsType.TWO_PAIRS) + " kicker";
+			return "two pairs (" + getCardName(hand.get(4)) + ", " + getCardName(hand.get(2)) + ") + " + getKickerName(hand, PokerHandsType.TWO_PAIRS) + " kicker";
 		if (getFigureType(cards) ==  PokerHandsType.PAIR)
-			return " pair of  " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.PAIR) + " kicker";
-		return "high card " + getCardName(hand.get(4)) + " + " + getKickerName(getHand(cards), PokerHandsType.HIGH_CARD) + " kicker"; // high card
+			return " pair of  " + getCardName(hand.get(4)) + " + " + getKickerName(hand, PokerHandsType.PAIR) + " kicker";
+		return "high card " + getCardName(hand.get(4)) + " + " + getKickerName(hand, PokerHandsType.HIGH_CARD) + " kicker"; // high card
 	}
 	
 	/**
@@ -118,22 +118,26 @@ public abstract class HandChecker {
 	 * 2 if cardsB are better
 	 */
 	public static int checkBetterHand(List<Card> cardsA, List<Card> cardsB) {
-		PokerHandsType figureA = getFigureType(cardsA);
-		PokerHandsType figureB = getFigureType(cardsB);
+		List<Card> newCardsA = new ArrayList<>();
+		List<Card> newCardsB = new ArrayList<>();
+		newCardsA.addAll(cardsA);
+		newCardsB.addAll(cardsB);
+		PokerHandsType figureA = getFigureType(newCardsA);
+		PokerHandsType figureB = getFigureType(newCardsB);
 		if (figureA.ordinal() > figureB.ordinal())
 			return 1;
 		else if (figureA.ordinal() < figureB.ordinal())
 			return 2;
 		else {
-			cardsA = getHand(cardsA);
-			cardsB = getHand(cardsB);
-			int size = (cardsA.size() >= cardsB.size() ? cardsB.size() : cardsA.size());
-			if (cardsA.equals(cardsB))
+			newCardsA = getHand(newCardsA);
+			newCardsB = getHand(newCardsB);
+			int size = (newCardsA.size() >= newCardsB.size() ? newCardsB.size() : newCardsA.size());
+			if (newCardsA.equals(newCardsB))
 				return 0;
 			for (int i = 1; i <= size; i++) {
-				if (cardsA.get(cardsA.size() - i).faceCard.ordinal() > cardsB.get(cardsB.size() - i).faceCard.ordinal())
+				if (newCardsA.get(newCardsA.size() - i).faceCard.ordinal() > newCardsB.get(newCardsB.size() - i).faceCard.ordinal())
 					return 1;
-				else if (cardsA.get(cardsA.size() - i).faceCard.ordinal() < cardsB.get(cardsB.size() - i).faceCard.ordinal())
+				else if (newCardsA.get(newCardsA.size() - i).faceCard.ordinal() < newCardsB.get(newCardsB.size() - i).faceCard.ordinal())
 					return 2;
 			}
 		}
@@ -199,6 +203,10 @@ public abstract class HandChecker {
 		return getOnlyFigure(cards, getFigureType(cards));
 	}
 	
+	private static List<Card> temp(List<Card> cards){
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @param wholeCards - all cards (player cards and cards on the table) - maximum 7
@@ -207,15 +215,17 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getHand(List<Card> wholeCards, List<Card> figureCards) {
 		List<Card> hand = new ArrayList<>();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(wholeCards);
 		hand.addAll(figureCards);
-		if (!wholeCards.containsAll(hand)) // wrong cards
+		if (!newCards.containsAll(hand)) // wrong cards
 			return null;
 		if (hand.size() == 5)
 			return hand;
-		wholeCards.sort(null);
-		for (int i = wholeCards.size() - 1; i >= 0 && hand.size() < 5; i--) {
-			if (!hand.contains(wholeCards.get(i)))
-				hand.add(0, wholeCards.get(i));
+		newCards.sort(null);
+		for (int i = newCards.size() - 1; i >= 0 && hand.size() < 5; i--) {
+			if (!hand.contains(newCards.get(i)))
+				hand.add(0, newCards.get(i));
 		}
 		return hand;
 	}
@@ -254,14 +264,16 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getPair(List<Card> cards) {
 		List<Card> pair = new ArrayList<>();
-		int size = cards.size();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		int size = newCards.size();
 		if (size < 2)
 			return null;
-		cards.sort(null);
+		newCards.sort(null);
 		for (int i = size - 1; i > 0; i--) {
-			if (cards.get(i).faceCard.equals(cards.get(i - 1).faceCard)) {
-				pair.add(cards.get(i - 1));
-				pair.add(cards.get(i));
+			if (newCards.get(i).faceCard.equals(newCards.get(i - 1).faceCard)) {
+				pair.add(newCards.get(i - 1));
+				pair.add(newCards.get(i));
 				return pair;
 			}
 		}
@@ -276,17 +288,19 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getTwoPairs(List<Card> cards) {
 		List<Card> pairs = new ArrayList<>();
-		int size = cards.size();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		int size = newCards.size();
 		Card cardFirstPair = null;
 		if (size < 4)
 			return null;
-		cards.sort(null);
+		newCards.sort(null);
 		for (int i = size - 1; i > 0; i--) {
-			if (cards.get(i).faceCard.equals(cards.get(i - 1).faceCard) && (cardFirstPair == null || !cards.get(i).faceCard.equals(cardFirstPair.faceCard))) {
-				pairs.add(cards.get(i - 1));
-				pairs.add(cards.get(i));
+			if (newCards.get(i).faceCard.equals(newCards.get(i - 1).faceCard) && (cardFirstPair == null || !newCards.get(i).faceCard.equals(cardFirstPair.faceCard))) {
+				pairs.add(newCards.get(i - 1));
+				pairs.add(newCards.get(i));
 				if (pairs.size() == 2)
-					cardFirstPair = cards.get(i);
+					cardFirstPair = newCards.get(i);
 				if (pairs.size() == 4) {
 					pairs.sort(null);
 					return pairs;
@@ -305,15 +319,17 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getThree(List<Card> cards) {
 		List<Card> three = new ArrayList<>();
-		int size = cards.size();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		int size = newCards.size();
 		if (size < 3)
 			return null;
-		cards.sort(null);
+		newCards.sort(null);
 		for (int i = size - 1; i > 1; i--) {
-			if (cards.get(i).faceCard.equals(cards.get(i - 1).faceCard) && cards.get(i).faceCard.equals(cards.get(i - 2).faceCard)) {
-				three.add(cards.get(i - 2));
-				three.add(cards.get(i - 1));
-				three.add(cards.get(i));
+			if (newCards.get(i).faceCard.equals(newCards.get(i - 1).faceCard) && newCards.get(i).faceCard.equals(newCards.get(i - 2).faceCard)) {
+				three.add(newCards.get(i - 2));
+				three.add(newCards.get(i - 1));
+				three.add(newCards.get(i));
 				return three;
 			}
 		}
@@ -373,18 +389,20 @@ public abstract class HandChecker {
 	 */
 	public static List<Card> getFlush(List<Card> cards) {
 		List<Card> flush = new ArrayList<>();
-		int size = cards.size();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		int size = newCards.size();
 		int[] color = {0, 0, 0, 0};
 		if (size < 5)
 			return null;
-		for (Card card : cards)
+		for (Card card : newCards)
 			++color[card.cardColor.ordinal()];
 		for (int i = 0; i < 4; i++) {
 			if (color[i] >= 5) {
-				cards.sort(null);
+				newCards.sort(null);
 				for (int j = 0; j < size; j++) {
-					if (cards.get(j).cardColor.ordinal() == i)
-						flush.add(cards.get(j));
+					if (newCards.get(j).cardColor.ordinal() == i)
+						flush.add(newCards.get(j));
 				}
 				while (flush.size() > 5)
 					flush.remove(0);
@@ -427,16 +445,18 @@ public abstract class HandChecker {
 	 */
 	public static List <Card> getFour(List<Card> cards) {
 		List<Card> four = new ArrayList<>();
-		int size = cards.size();
+		List<Card> newCards = new ArrayList<>();
+		newCards.addAll(cards);
+		int size = newCards.size();
 		if (size < 4)
 			return null;
-		cards.sort(null);
+		newCards.sort(null);
 		for (int i = 3; i < size; i++) {
-			if (cards.get(i).faceCard.equals(cards.get(i - 1).faceCard) && cards.get(i).faceCard.equals(cards.get(i - 2).faceCard) && cards.get(i).faceCard.equals(cards.get(i - 3).faceCard)) {
-				four.add(cards.get(i - 3));
-				four.add(cards.get(i - 2));
-				four.add(cards.get(i - 1));
-				four.add(cards.get(i));
+			if (newCards.get(i).faceCard.equals(newCards.get(i - 1).faceCard) && newCards.get(i).faceCard.equals(newCards.get(i - 2).faceCard) && newCards.get(i).faceCard.equals(newCards.get(i - 3).faceCard)) {
+				four.add(newCards.get(i - 3));
+				four.add(newCards.get(i - 2));
+				four.add(newCards.get(i - 1));
+				four.add(newCards.get(i));
 				return four;
 			}
 		}
@@ -628,6 +648,14 @@ public abstract class HandChecker {
 			return false;
 		if (straight.contains(ownCards.get(0)) || straight.contains(ownCards.get(1)))
 			return true;
+		else { // if player has own straight, but one of one card has the same face card than card on the table
+			for (int i = 0; i < straight.size(); i++) {
+				for (int j = 0; j < ownCards.size(); j++) {
+					if (straight.get(i).faceCard.ordinal() == ownCards.get(j).faceCard.ordinal())
+						return true;
+				}
+			}
+		}
 		return false;
 	}
 	
@@ -684,6 +712,14 @@ public abstract class HandChecker {
 			return false;
 		if (fullHouse.contains(ownCards.get(0)) || fullHouse.contains(ownCards.get(1)))
 			return true;
+		else { // if player has own full house, but one of one card has the same face card than card on the table (has two threes)
+			for (int i = 0; i < fullHouse.size(); i++) {
+				for (int j = 0; j < ownCards.size(); j++) {
+					if (fullHouse.get(i).faceCard.ordinal() == ownCards.get(j).faceCard.ordinal())
+						return true;
+				}
+			}
+		}
 		return false;
 	}
 	
